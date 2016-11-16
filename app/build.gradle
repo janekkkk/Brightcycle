@@ -36,8 +36,10 @@ dependencies {
 
     //
     compile 'com.jakewharton:butterknife:8.4.0'
+    apt 'com.jakewharton:butterknife-compiler:8.4.0'
     compile 'org.parceler:parceler-api:1.1.1'
     apt 'org.parceler:parceler:1.1.1'
-    compile 'com.robotpajamas.blueteeth:blueteeth:0.2.0'
+    compile 'com.akexorcist:bluetoothspp:1.0.0'
+    compile 'com.jakewharton.timber:timber:4.3.1'
 }
 

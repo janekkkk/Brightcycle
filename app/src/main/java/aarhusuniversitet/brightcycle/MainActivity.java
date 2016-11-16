@@ -1,31 +1,37 @@
 package aarhusuniversitet.brightcycle;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.robotpajamas.blueteeth.BlueteethDevice;
-import com.robotpajamas.blueteeth.BlueteethManager;
-
-import java.util.ArrayList;
-
+import app.akexorcist.bluetotohspp.library.BluetoothSPP;
+import app.akexorcist.bluetotohspp.library.BluetoothState;
+import app.akexorcist.bluetotohspp.library.DeviceList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
-    
-    ArrayList<BlueteethDevice> bluetoothDevices = new ArrayList<>();
+
+    private static final int REQUEST_ENABLE_BT = 1;
+    BluetoothSPP bluetoothConnection;
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
+    @BindView(R.id.btn_connect_bluetooth)
+    Button btnConnectBluetooth;
+    @BindView(R.id.content_main)
+    RelativeLayout contentMain;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,53 +41,15 @@ public class MainActivity extends AppCompatActivity {
         Timber.plant(new Timber.DebugTree());
 
         setSupportActionBar(toolbar);
-
-        // If BLE support isn't there, quit the app
-        checkBluetoothSupport();
+        bluetoothConnection = new BluetoothSPP(this.getApplicationContext());
     }
 
     @Override
-    protected void onStart() {
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        bluetoothDevices.clear();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
-    private void checkBluetoothSupport() {
-        // Check for BLE support - also checked from Android manifest.
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            exitApp("No BLE Support...");
+    public void onStart() {
+        super.onStart();
+        if (!bluetoothConnection.isBluetoothAvailable()) {
+            Toast.makeText(this.getApplicationContext(), "Bluetooth is not available on your device.", Toast.LENGTH_LONG).show();
         }
-
-        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (btAdapter == null) {
-            exitApp("No BLE Support...");
-        }
-
-        //noinspection ConstantConditions
-        if (!btAdapter.isEnabled()) {
-            enableBluetooth();
-        }
-    }
-
-    private void exitApp(String reason) {
-        // Something failed, exit the app and send a toast as to why
-        Toast.makeText(getApplicationContext(), reason, Toast.LENGTH_LONG).show();
-        finish();
-    }
-
-    private void enableBluetooth() {
-        // Ask user to enable bluetooth if it is currently disabled
-        startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), REQ_BLUETOOTH_ENABLE);
     }
 
     @Override
@@ -98,11 +66,55 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == BluetoothState.REQUEST_CONNECT_DEVICE) {
+            if (resultCode == Activity.RESULT_OK)
+                bluetoothConnection.connect(data);
+        } else if (requestCode == BluetoothState.REQUEST_ENABLE_BT) {
+            if (resultCode == Activity.RESULT_OK) {
+                bluetoothConnection.setupService();
+                bluetoothConnection.startService(BluetoothState.DEVICE_ANDROID);
+                btnConnectBluetooth.setVisibility(View.GONE);
+                setupBluetooth();
+            } else {
+                // Do something if user doesn't choose any device (Pressed back)
+                Toast.makeText(this.getApplicationContext(), "No device chosen.", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private void setupBluetooth() {
+
+        bluetoothConnection.setOnDataReceivedListener((data, message) -> {
+            // Do something when data incoming
+        });
+    }
+
+    private void requestBluetoothPermission() {
+        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+    }
+
+    private void askConnection() {
+        Intent intent = new Intent(getApplicationContext(), DeviceList.class);
+        startActivityForResult(intent, BluetoothState.REQUEST_CONNECT_DEVICE);
+    }
+
+    @OnClick(R.id.btn_connect_bluetooth)
+    public void connectBluetooth(View view) {
+        Timber.d("Bluetooth connect button pressed");
+        if (!bluetoothConnection.isBluetoothEnabled()) {
+            requestBluetoothPermission();
+        } else {
+            askConnection();
+        }
+    }
+
 }
