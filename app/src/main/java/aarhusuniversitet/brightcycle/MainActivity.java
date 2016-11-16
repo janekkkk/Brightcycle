@@ -1,14 +1,12 @@
 package aarhusuniversitet.brightcycle;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -20,11 +18,10 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
-
-    private static final int REQ_BLUETOOTH_ENABLE = 1000;
-    private static final int DEVICE_SCAN_MILLISECONDS = 10000;
+    
     ArrayList<BlueteethDevice> bluetoothDevices = new ArrayList<>();
 
     @BindView(R.id.toolbar)
@@ -35,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        Timber.plant(new Timber.DebugTree());
 
         setSupportActionBar(toolbar);
 
@@ -43,38 +41,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 
         bluetoothDevices.clear();
-        startScanning();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        stopScanning();
-    }
-
-    private void startScanning() {
-        // Clear existing devices (assumes none are connected)
-        Log.d("TEST", "Start scanning");
-        bluetoothDevices.clear();
-        BlueteethManager.with(this).scanForPeripherals(DEVICE_SCAN_MILLISECONDS, bleDevices -> {
-            Log.d("TEST", "On Scan completed");
-            //mSwipeRefresh.setRefreshing(false);
-            for (BlueteethDevice device : bleDevices) {
-                if (!TextUtils.isEmpty(device.getBluetoothDevice().getName())) {
-                    Log.d("TEST", device.getName() + ", " + device.getMacAddress());
-                    bluetoothDevices.add(device);
-                }
-            }
-        });
-    }
-
-    private void stopScanning() {
-        // Update the button, and shut off the progress bar
-        BlueteethManager.with(this).stopScanForPeripherals();
     }
 
     private void checkBluetoothSupport() {
