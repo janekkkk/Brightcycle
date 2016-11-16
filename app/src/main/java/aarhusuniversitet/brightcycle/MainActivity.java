@@ -56,7 +56,10 @@ public class MainActivity extends AppCompatActivity {
         if (!bluetoothConnection.isBluetoothAvailable()) {
             Toast.makeText(this.getApplicationContext(), "Bluetooth is not available on your device.", Toast.LENGTH_LONG).show();
         }
+        createAppDrawer();
+    }
 
+    private void createAppDrawer() {
         //if you want to update the items at a later time it is recommended to keep it in a variable
         PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(1).withName("BrightCycle");
         SecondaryDrawerItem item2 = new SecondaryDrawerItem().withIdentifier(2).withName("Emergency call");
@@ -76,10 +79,21 @@ public class MainActivity extends AppCompatActivity {
                         new DividerDrawerItem()
                 )
                 .withOnDrawerItemClickListener((view, i, iDrawerItem) -> {
+                    Timber.d("Item " + Integer.toString(i) + " Clicked");
+                    switch (i) {
+                        case 1:
+
+                            break;
+                        case 2:
+
+                            break;
+                        case 3:
+
+                            break;
+                    }
                     return false;
                 })
                 .build();
-
     }
 
     @Override
