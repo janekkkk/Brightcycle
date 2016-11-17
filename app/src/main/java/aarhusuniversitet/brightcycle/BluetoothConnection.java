@@ -63,8 +63,6 @@ public class BluetoothConnection {
     }
 
     private void setOndataReceivedListener() {
-        bluetoothSPP.setOnDataReceivedListener((data, message) -> {
-            // Do something when data incoming
-        });
+
     }
 }

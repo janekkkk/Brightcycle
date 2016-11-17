@@ -57,48 +57,10 @@ public class MainActivity extends AppCompatActivity {
         // TODO Add line when bluetooth has to be enabled again.
         //btnConnectBluetooth.setVisibility(View.VISIBLE);
 
-        createAppDrawer();
-
         Intent intent = new Intent(this, MapsActivity.class);
         startActivity(intent);
     }
 
-    private void createAppDrawer() {
-        //if you want to update the items at a later time it is recommended to keep it in a variable
-        PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(1).withName("BrightCycle");
-        SecondaryDrawerItem item2 = new SecondaryDrawerItem().withIdentifier(2).withName("Emergency call");
-        SecondaryDrawerItem item3 = new SecondaryDrawerItem().withIdentifier(3).withName("Show bicycle location");
-        SecondaryDrawerItem item4 = new SecondaryDrawerItem().withIdentifier(4).withName("Settings");
-
-        //create the drawer and remember the `Drawer` result object
-        Drawer result = new DrawerBuilder()
-                .withActivity(this)
-                .withToolbar(toolbar)
-                .addDrawerItems(
-                        item1,
-                        new DividerDrawerItem(),
-                        item2,
-                        item3,
-                        item4,
-                        new DividerDrawerItem()
-                )
-                .withOnDrawerItemClickListener((view, i, iDrawerItem) -> {
-                    Timber.d("Item " + Integer.toString(i) + " Clicked");
-                    switch (i) {
-                        case 1:
-
-                            break;
-                        case 2:
-
-                            break;
-                        case 3:
-
-                            break;
-                    }
-                    return false;
-                })
-                .build();
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
