@@ -1,12 +1,16 @@
 package aarhusuniversitet.brightcycle;
 
 import android.Manifest;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -72,7 +76,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
         }
-    
+
 //        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
@@ -83,6 +87,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SecondaryDrawerItem item2 = new SecondaryDrawerItem().withIdentifier(2).withName("Emergency call");
         SecondaryDrawerItem item3 = new SecondaryDrawerItem().withIdentifier(3).withName("Show bicycle location");
         SecondaryDrawerItem item4 = new SecondaryDrawerItem().withIdentifier(4).withName("Settings");
+        SecondaryDrawerItem item5 = new SecondaryDrawerItem().withIdentifier(5).withName("Last locations");
+
 
         //create the drawer and remember the `Drawer` result object
         Drawer result = new DrawerBuilder()
@@ -94,7 +100,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         item2,
                         item3,
                         item4,
-                        new DividerDrawerItem()
+                        new DividerDrawerItem(),
+                        item5
                 )
                 .withOnDrawerItemClickListener((view, i, iDrawerItem) -> {
                     Timber.d("Item " + Integer.toString(i) + " Clicked");
@@ -103,7 +110,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                             break;
                         case 2:
-
+                            Emergency.makeEmergencyCall(this);
                             break;
                         case 3:
 
