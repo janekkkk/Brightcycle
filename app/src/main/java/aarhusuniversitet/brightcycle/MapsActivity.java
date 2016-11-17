@@ -16,6 +16,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.holder.ImageHolder;
 import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
@@ -31,12 +32,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @BindView(R.id.content_main)
     RelativeLayout contentMain;
 
-    private GoogleMap mMap;
-    private LocationProvider mLocationProvider;
+    private GoogleMap googleMap;
+    private LocationProvider locationProvider;
+    public LatLng currentLocation;
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,12 +57,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         createAppDrawer();
 
-        mLocationProvider = new LocationProvider(this, this);
+        locationProvider = new LocationProvider(this, this);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
+        this.googleMap = googleMap;
 
         setUpMap();
     }
@@ -70,18 +71,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onResume() {
         super.onResume();
         setUpMapIfNeeded();
-        mLocationProvider.connect();
+        locationProvider.connect();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        mLocationProvider.disconnect();
+        locationProvider.disconnect();
     }
 
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
-        if (mMap == null) {
+        if (googleMap == null) {
             // Try to obtain the map from the SupportMapFragment.
             SupportMapFragment mMap = (SupportMapFragment) getSupportFragmentManager()
                     .findFragmentById(map);
@@ -90,10 +91,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void setUpMap() {
-        mMap.setPadding(0, 0, 0, 0);
+        googleMap.setPadding(0, 0, 0, 0);
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
-            mMap.setMyLocationEnabled(true);
+            googleMap.setMyLocationEnabled(true);
         }
 
         // Set markers etc
@@ -104,43 +105,34 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         double currentLatitude = location.getLatitude();
         double currentLongitude = location.getLongitude();
-        LatLng latLng = new LatLng(currentLatitude, currentLongitude);
+        currentLocation = new LatLng(currentLatitude, currentLongitude);
 
-        mMap.setMinZoomPreference(13.0f);
-        mMap.setMaxZoomPreference(18.0f);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 14.0f));
     }
 
     public void createAppDrawer() {
-        //if you want to update the items at a later time it is recommended to keep it in a variable
-        PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(1).withName("BrightCycle");
-        SecondaryDrawerItem item2 = new SecondaryDrawerItem().withIdentifier(2).withName("Emergency call");
-        SecondaryDrawerItem item3 = new SecondaryDrawerItem().withIdentifier(3).withName("Show bicycle location");
-        SecondaryDrawerItem item4 = new SecondaryDrawerItem().withIdentifier(4).withName("Settings");
-        SecondaryDrawerItem item5 = new SecondaryDrawerItem().withIdentifier(5).withName("Last locations");
 
-
-        //create the drawer and remember the `Drawer` result object
         Drawer result = new DrawerBuilder()
                 .withActivity(this)
                 .withToolbar(toolbar)
                 .addDrawerItems(
-                        item1,
+                        new PrimaryDrawerItem().withIdentifier(1).withName("Emergency call"),
+                        new PrimaryDrawerItem().withIdentifier(2).withName("Emergency SMS"),
                         new DividerDrawerItem(),
-                        item2,
-                        item3,
-                        item4,
+                        new PrimaryDrawerItem().withIdentifier(3).withName("Settings"),
                         new DividerDrawerItem(),
-                        item5
+                        new PrimaryDrawerItem().withIdentifier(4).withName("Show bicycle location"),
+                        new DividerDrawerItem(),
+                        new PrimaryDrawerItem().withIdentifier(5).withName("Last searched locations")
                 )
                 .withOnDrawerItemClickListener((view, i, iDrawerItem) -> {
                     Timber.d("Item " + Integer.toString(i) + " Clicked");
                     switch (i) {
                         case 1:
-
+                            Emergency.makeEmergencyCall(this);
                             break;
                         case 2:
-                            Emergency.makeEmergencyCall(this);
+                            Emergency.makeEmergencySMS(this, currentLocation);
                             break;
                         case 3:
 
@@ -148,7 +140,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                     return false;
                 })
+                .withSelectedItem(-1)
                 .build();
 
+        result.updateIcon(1, new ImageHolder(R.drawable.ic_dialer_sip));
+        result.updateIcon(2, new ImageHolder(R.drawable.ic_message));
+        result.updateIcon(3, new ImageHolder(R.drawable.ic_settings));
+        result.updateIcon(4, new ImageHolder(R.drawable.ic_directions_bike));
+
+        result.addItem(new SecondaryDrawerItem().withIdentifier(6).withName("Heibersgade 12, Aarhus"));
+        result.addItem(new SecondaryDrawerItem().withIdentifier(7).withName("Norregade 8, Aarhus"));
+
+        result.updateIcon(6, new ImageHolder(R.drawable.ic_directions));
+        result.updateIcon(7, new ImageHolder(R.drawable.ic_directions));
     }
+
 }
