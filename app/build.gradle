@@ -33,10 +33,9 @@ dependencies {
     })
 
     //
-    compile('com.mikepenz:materialdrawer:5.7.0@aar') {
+    compile('com.mikepenz:materialdrawer:5.7.0@aar') { 
         transitive = true
     }
-
 
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:design:24.2.1'
@@ -50,5 +49,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     apt 'com.jakewharton:butterknife-compiler:8.4.0'
     apt 'org.parceler:parceler:1.1.1'
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.2.4'
+
 }
 

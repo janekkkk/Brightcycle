@@ -58,13 +58,8 @@ public class MainActivity extends AppCompatActivity {
         // TODO Add line when bluetooth has to be enabled again.
         //btnConnectBluetooth.setVisibility(View.VISIBLE);
 
-        Intent intent = new Intent(this, MapsActivity.class);
+        Intent intent = new Intent(this, HereMapsActivity.class);
         startActivity(intent);
-
-//        Uri gmmIntentUri = Uri.parse("google.navigation:q=Taronga+Zoo,+Sydney+Australia");
-//        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-//        mapIntent.setPackage("com.google.android.apps.maps");
-//        startActivity(mapIntent);
     }
 
 
