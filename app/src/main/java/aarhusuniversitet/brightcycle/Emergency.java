@@ -23,17 +23,17 @@ public class Emergency {
     }
 
     public static void makeEmergencySMS(Activity activity, LatLng latLng) {
-        String message = null;
-        if (latLng == null) {
-            message = "SOS I have an emergency! Please call me ASAP!";
-        } else {
+        String message = "SOS I have an emergency! Please call me ASAP!";
+        if (latLng != null) {
             message = "SOS I have an emergency at: " + latLng.latitude + ", " + latLng.longitude;
         }
+
         Uri smsUri = Uri.parse("tel:112");
         Intent intent = new Intent(Intent.ACTION_VIEW, smsUri);
         intent.putExtra("address", "112");
         intent.putExtra("sms_body", message);
-        intent.setType("vnd.android-dir/mms-sms");//here setType will set the previous data null.
+        intent.setType("vnd.android-dir/mms-sms");
+
         if (intent.resolveActivity(activity.getPackageManager()) != null) {
             activity.startActivity(intent);
         }

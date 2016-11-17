@@ -52,6 +52,7 @@ public class BluetoothConnection {
 
             public void onDeviceDisconnected() {
                 // Do something when connection was disconnected
+                // TODO Save last location
                 Timber.d("Bluetooth device disconnected!");
             }
 

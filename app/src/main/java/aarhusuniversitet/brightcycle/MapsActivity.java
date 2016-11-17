@@ -39,6 +39,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @BindView(R.id.toolbar)
     Toolbar toolbar;
 
+    private String directionsAPIKey = "AIzaSyA1cBJpwFJ54somKYB5V4DjCegS7l4lZ8I";
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,7 +123,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         new DividerDrawerItem(),
                         new PrimaryDrawerItem().withIdentifier(3).withName("Settings"),
                         new DividerDrawerItem(),
-                        new PrimaryDrawerItem().withIdentifier(4).withName("Show bicycle location"),
+                        new PrimaryDrawerItem().withIdentifier(4).withName("Show parked bicycle"),
                         new DividerDrawerItem(),
                         new PrimaryDrawerItem().withIdentifier(5).withName("Last searched locations")
                 )
