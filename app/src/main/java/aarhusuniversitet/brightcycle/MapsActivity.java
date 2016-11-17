@@ -40,7 +40,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     Toolbar toolbar;
 
     private String directionsAPIKey = "AIzaSyA1cBJpwFJ54somKYB5V4DjCegS7l4lZ8I";
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

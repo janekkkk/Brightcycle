@@ -42,6 +42,17 @@
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" />
+
+        <meta-data
+            android:name="com.here.android.maps.appid"
+            android:value="YOUR_APP_ID" />
+        <meta-data
+            android:name="com.here.android.maps.apptoken"
+            android:value="YOUR_APP_CODE" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"></activity>
     </application>
 
 </manifest>
