@@ -5,6 +5,7 @@ import android.content.Intent;
 
 import app.akexorcist.bluetotohspp.library.BluetoothSPP;
 import app.akexorcist.bluetotohspp.library.BluetoothState;
+import timber.log.Timber;
 
 public class BluetoothConnection {
 
@@ -39,9 +40,29 @@ public class BluetoothConnection {
         bluetoothSPP.setupService();
         bluetoothSPP.startService(BluetoothState.DEVICE_OTHER);
         setOndataReceivedListener();
+        setConnectionListener();
     }
 
-    public void setOndataReceivedListener() {
+    private void setConnectionListener() {
+        bluetoothSPP.setBluetoothConnectionListener(new BluetoothSPP.BluetoothConnectionListener() {
+            public void onDeviceConnected(String name, String address) {
+                // Do something when successfully connected
+                Timber.d("Connected! " + name + " " + address);
+            }
+
+            public void onDeviceDisconnected() {
+                // Do something when connection was disconnected
+                Timber.d("Bluetooth device disconnected!");
+            }
+
+            public void onDeviceConnectionFailed() {
+                // Do something when connection failed
+                Timber.d("Bluetooth connection failed!");
+            }
+        });
+    }
+
+    private void setOndataReceivedListener() {
         bluetoothSPP.setOnDataReceivedListener((data, message) -> {
             // Do something when data incoming
         });

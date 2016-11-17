@@ -53,7 +53,14 @@ public class MainActivity extends AppCompatActivity {
         if (!bluetoothConnection.isBluetoothAvailable()) {
             Toast.makeText(this.getApplicationContext(), "Bluetooth is not available on your device.", Toast.LENGTH_LONG).show();
         }
+
+        // TODO Add line when bluetooth has to be enabled again.
+        //btnConnectBluetooth.setVisibility(View.VISIBLE);
+
         createAppDrawer();
+
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
     }
 
     private void createAppDrawer() {

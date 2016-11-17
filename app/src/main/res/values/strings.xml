@@ -7,4 +7,5 @@
     <string name="reset_counter">Reset Counter</string>
     <string name="clear">Clear</string>
     <string name="disconnect">Disconnect</string>
+    <string name="title_activity_maps">Map</string>
 </resources>
