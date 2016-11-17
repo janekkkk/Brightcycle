@@ -19,7 +19,6 @@ import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 
-import app.akexorcist.bluetotohspp.library.BluetoothSPP;
 import app.akexorcist.bluetotohspp.library.BluetoothState;
 import app.akexorcist.bluetotohspp.library.DeviceList;
 import butterknife.BindView;
@@ -29,9 +28,6 @@ import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int REQUEST_ENABLE_BT = 1;
-    BluetoothSPP bluetoothConnection;
-
     @BindView(R.id.toolbar)
     Toolbar toolbar;
     @BindView(R.id.btn_connect_bluetooth)
@@ -39,15 +35,16 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.content_main)
     RelativeLayout contentMain;
 
+    BluetoothConnection bluetoothConnection;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         Timber.plant(new Timber.DebugTree());
-
         setSupportActionBar(toolbar);
-        bluetoothConnection = new BluetoothSPP(this.getApplicationContext());
+        bluetoothConnection = BluetoothConnection.getInstance(this.getApplicationContext());
     }
 
     @Override
@@ -117,16 +114,15 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    // Get fired when the user picks a bluetooth connection to connect with.
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == BluetoothState.REQUEST_CONNECT_DEVICE) {
             if (resultCode == Activity.RESULT_OK)
                 bluetoothConnection.connect(data);
         } else if (requestCode == BluetoothState.REQUEST_ENABLE_BT) {
             if (resultCode == Activity.RESULT_OK) {
-                bluetoothConnection.setupService();
-                bluetoothConnection.startService(BluetoothState.DEVICE_ANDROID);
                 btnConnectBluetooth.setVisibility(View.GONE);
-                setupBluetooth();
+                bluetoothConnection.setupBluetoothConnection();
             } else {
                 // Do something if user doesn't choose any device (Pressed back)
                 Toast.makeText(this.getApplicationContext(), "No device chosen.", Toast.LENGTH_LONG).show();
@@ -134,19 +130,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setupBluetooth() {
-
-        bluetoothConnection.setOnDataReceivedListener((data, message) -> {
-            // Do something when data incoming
-        });
-    }
-
-    private void requestBluetoothPermission() {
+    public void requestBluetoothPermission() {
         Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        startActivityForResult(enableBtIntent, BluetoothConnection.REQUEST_ENABLE_BT);
     }
 
-    private void askConnection() {
+    private void askUserToChooseBluetoothConnection() {
         Intent intent = new Intent(getApplicationContext(), DeviceList.class);
         startActivityForResult(intent, BluetoothState.REQUEST_CONNECT_DEVICE);
     }
@@ -157,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
         if (!bluetoothConnection.isBluetoothEnabled()) {
             requestBluetoothPermission();
         } else {
-            askConnection();
+            askUserToChooseBluetoothConnection();
         }
     }
 
