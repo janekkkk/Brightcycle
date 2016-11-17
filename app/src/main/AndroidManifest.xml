@@ -38,21 +38,22 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
+        <meta-data
+            android:name="com.here.android.maps.appid"
+            android:value="@string/here_app_id" />
+        <meta-data
+            android:name="com.here.android.maps.apptoken"
+            android:value="@string/here_app_key" />
 
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" />
-
-        <meta-data
-            android:name="com.here.android.maps.appid"
-            android:value="YOUR_APP_ID" />
-        <meta-data
-            android:name="com.here.android.maps.apptoken"
-            android:value="YOUR_APP_CODE" />
-
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"></activity>
+            android:label="@string/title_activity_settings" />
+        <activity
+            android:name=".HereMapsActivity"
+            android:label="@string/title_activity_here_maps" />
     </application>
 
 </manifest>
