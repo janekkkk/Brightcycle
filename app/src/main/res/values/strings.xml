@@ -10,6 +10,8 @@
     <string name="title_activity_settings">Settings</string>
     <string name="here_app_id">FiKj3Ivux42Aw9Fl7Pbu</string>
     <string name="here_app_key">_ZJpfmnId1izkEw5_Sspjw</string>
+    <string name="label_button_getdirections">Get Directions</string>
+    <string name="textview_routecoordinates_2waypoints">Press "Get Directions" button to calculate a route:\nStart: Burnaby\nEnd: YVR Airport</string>
 
     <!-- Strings related to Settings -->
 

@@ -7,6 +7,31 @@
     android:fitsSystemWindows="true"
     tools:context="aarhusuniversitet.brightcycle.HereMapsActivity">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include layout="@layout/content_here_maps" />
+
+        <android.widget.Button
+            android:id="@+id/btnGetDirections"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_button_getdirections"
+            android:onClick="getDirections"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/textview_routecoordinates_2waypoints"
+            tools:context=".HereMapsActivity"
+            android:layout_above="@+id/btnGetDirections"
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,13 +40,11 @@
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="56dp"
             android:background="?attr/colorPrimary"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
-
-    <include layout="@layout/content_here_maps" />
 
 </android.support.design.widget.CoordinatorLayout>
 
