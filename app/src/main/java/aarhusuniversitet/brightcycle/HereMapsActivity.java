@@ -3,13 +3,17 @@ package aarhusuniversitet.brightcycle;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.here.android.mpa.common.GeoBoundingBox;
 import com.here.android.mpa.common.GeoCoordinate;
 import com.here.android.mpa.common.GeoPosition;
+import com.here.android.mpa.common.Image;
 import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.common.PositioningManager;
 import com.here.android.mpa.mapping.Map;
@@ -20,6 +24,7 @@ import com.here.android.mpa.routing.RouteManager;
 import com.here.android.mpa.routing.RouteOptions;
 import com.here.android.mpa.routing.RoutePlan;
 import com.here.android.mpa.routing.RouteResult;
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
 import com.mikepenz.materialdrawer.holder.ImageHolder;
@@ -40,6 +45,8 @@ public class HereMapsActivity extends AppCompatActivity {
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
+    @BindView(R.id.btnGetDirections)
+    Button btnGetDirections;
 
     // map embedded in the map fragment
     private Map map = null;
@@ -220,8 +227,8 @@ public class HereMapsActivity extends AppCompatActivity {
         GeoCoordinate destination = new GeoCoordinate(56.156491, 10.211105);
         routePlan.addWaypoint(destination);
 
-        com.here.android.mpa.common.Image myImage =
-                new com.here.android.mpa.common.Image();
+        Image myImage =
+                new Image();
         try {
             myImage.setImageResource(R.drawable.ic_action_location);
         } catch (IOException e) {
@@ -293,5 +300,12 @@ public class HereMapsActivity extends AppCompatActivity {
         result.updateIcon(7, new ImageHolder(R.drawable.ic_directions));
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
 
+        MenuItem item = menu.findItem(R.id.action_search);
+
+        return true;
+    }
 }
