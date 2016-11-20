@@ -14,6 +14,7 @@ import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.common.PositioningManager;
 import com.here.android.mpa.mapping.Map;
 import com.here.android.mpa.mapping.MapFragment;
+import com.here.android.mpa.mapping.MapMarker;
 import com.here.android.mpa.mapping.MapRoute;
 import com.here.android.mpa.routing.RouteManager;
 import com.here.android.mpa.routing.RouteOptions;
@@ -26,6 +27,7 @@ import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
@@ -71,13 +73,6 @@ public class HereMapsActivity extends AppCompatActivity {
         initHereMaps();
 
         appPaused = false;
-        Timber.d("TESTTTT");
-        if (posManager != null) {
-            Timber.d("Teeest");
-            posManager.start(
-                    PositioningManager.LocationMethod.GPS_NETWORK);
-
-        }
     }
 
     @Override
@@ -111,7 +106,7 @@ public class HereMapsActivity extends AppCompatActivity {
                     // to reduce CPU consumption
                     if (!appPaused) {
                         map.setCenter(position.getCoordinate(),
-                                Map.Animation.NONE);
+                                Map.Animation.LINEAR);
                     }
                 }
 
@@ -150,9 +145,9 @@ public class HereMapsActivity extends AppCompatActivity {
                 posManager.addListener(
                         new WeakReference<PositioningManager.OnPositionChangedListener>(positionListener));
 
-
                 // Display position indicator
                 map.getPositionIndicator().setVisible(true);
+
             } else {
                 Timber.d("Initializing Here Maps Failed...");
             }
@@ -217,10 +212,25 @@ public class HereMapsActivity extends AppCompatActivity {
 
         // 4. Select Waypoints for your routes
         // START
-        routePlan.addWaypoint(new GeoCoordinate(56.1629, 10.2039));
+        if (posManager != null) {
+            routePlan.addWaypoint(posManager.getPosition().getCoordinate());
+        }
 
         // END
-        routePlan.addWaypoint(new GeoCoordinate(56.1503, 10.2047));
+        GeoCoordinate destination = new GeoCoordinate(56.156491, 10.211105);
+        routePlan.addWaypoint(destination);
+
+        com.here.android.mpa.common.Image myImage =
+                new com.here.android.mpa.common.Image();
+        try {
+            myImage.setImageResource(R.drawable.ic_action_location);
+        } catch (IOException e) {
+            finish();
+        }
+
+        map.addMapObject(new MapMarker(destination, myImage));
+
+        map.setZoomLevel(35);
 
         // 5. Retrieve Routing information via RouteManagerListener
         RouteManager.Error error =
