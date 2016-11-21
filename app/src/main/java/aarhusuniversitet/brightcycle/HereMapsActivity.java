@@ -49,19 +49,11 @@ public class HereMapsActivity extends AppCompatActivity {
     @BindView(R.id.btnGetDirections)
     Button btnGetDirections;
 
-    // map embedded in the map fragment
     private Map map = null;
-
-    // map fragment embedded in this activity
     private MapFragment mapFragment = null;
-
-    // TextView for displaying the current map scheme
-    private TextView textViewResult = null;
-
-    // MapRoute for this activity
     private MapRoute mapRoute = null;
-
     private PositioningManager posManager;
+
     private boolean appPaused;
 
     @Override
@@ -71,16 +63,13 @@ public class HereMapsActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
         Timber.plant(new Timber.DebugTree());
+        appPaused = false;
 
         createActionBar();
         createAppDrawer();
 
-
         posManager = PositioningManager.getInstance();
-
         initHereMaps();
-
-        appPaused = false;
     }
 
     @Override
@@ -93,7 +82,6 @@ public class HereMapsActivity extends AppCompatActivity {
     }
 
     @Override
-    // To remove the positioning listener
     public void onDestroy() {
         if (posManager != null) {
             // Cleanup
@@ -120,12 +108,12 @@ public class HereMapsActivity extends AppCompatActivity {
 
                 public void onPositionFixChanged(PositioningManager.LocationMethod method,
                                                  PositioningManager.LocationStatus status) {
+                    Timber.d("Position changed: " + status.name());
                 }
             };
 
 
     private void initHereMaps() {
-        // Search for the map fragment to finish setup by calling init().
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(
                 R.id.mapfragment);
         mapFragment.init(error -> {
@@ -142,8 +130,6 @@ public class HereMapsActivity extends AppCompatActivity {
                 // Set the zoom level to the average between min and max
                 map.setZoomLevel(
                         (map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
-                textViewResult = (TextView) findViewById(R.id.title);
-                textViewResult.setText(R.string.textview_routecoordinates_2waypoints);
 
                 posManager = PositioningManager.getInstance();
                 posManager.start(
@@ -151,7 +137,7 @@ public class HereMapsActivity extends AppCompatActivity {
 
                 // Register positioning listener
                 posManager.addListener(
-                        new WeakReference<PositioningManager.OnPositionChangedListener>(positionListener));
+                        new WeakReference<>(positionListener));
 
                 // Display position indicator
                 map.getPositionIndicator().setVisible(true);
@@ -161,7 +147,6 @@ public class HereMapsActivity extends AppCompatActivity {
             }
         });
 
-
     }
 
     private RouteManager.Listener routeManagerListener =
@@ -169,39 +154,34 @@ public class HereMapsActivity extends AppCompatActivity {
                 public void onCalculateRouteFinished(RouteManager.Error errorCode,
                                                      List<RouteResult> result) {
 
+                    RouteResult routeResult = result.get(0);
                     if (errorCode == RouteManager.Error.NONE &&
-                            result.get(0).getRoute() != null) {
+                            routeResult.getRoute() != null) {
 
                         // create a map route object and place it on the map
-                        mapRoute = new MapRoute(result.get(0).getRoute());
+                        mapRoute = new MapRoute(routeResult.getRoute());
                         map.addMapObject(mapRoute);
 
                         // Get the bounding box containing the route and zoom in
-                        GeoBoundingBox gbb = result.get(0).getRoute().getBoundingBox();
+                        GeoBoundingBox gbb = routeResult.getRoute().getBoundingBox();
                         map.zoomTo(gbb, Map.Animation.LINEAR,
                                 Map.MOVE_PRESERVE_ORIENTATION);
 
-                        textViewResult.setText(
-                                String.format("Route calculated with %d maneuvers.",
-                                        result.get(0).getRoute().getManeuvers().size()));
+                        //routeResult.getRoute().getManeuvers().size()
                     } else {
-                        textViewResult.setText(
-                                String.format("Route calculation failed: %s",
-                                        errorCode.toString()));
+                        Timber.d("Route calculation failed: %s",
+                                errorCode.toString());
                     }
                 }
 
                 public void onProgress(int percentage) {
-                    textViewResult.setText(
-                            String.format("... %d percent done ...", percentage));
+                    Timber.d("... %d percent done ...", percentage);
                 }
             };
 
     @OnClick(R.id.btnGetDirections)
-    // Functionality for taps of the "Get Directions" button
     public void getDirections(View view) {
         // 1. clear previous results
-        textViewResult.setText("");
         if (map != null && mapRoute != null) {
             map.removeMapObject(mapRoute);
             mapRoute = null;
@@ -228,15 +208,15 @@ public class HereMapsActivity extends AppCompatActivity {
         GeoCoordinate destination = new GeoCoordinate(56.156491, 10.211105);
         routePlan.addWaypoint(destination);
 
-        Image myImage =
-                new Image();
+        Image destinationMarkerImage =  new Image();
+
         try {
-            myImage.setImageResource(R.drawable.ic_action_location);
+            destinationMarkerImage.setImageResource(R.drawable.ic_action_location);
         } catch (IOException e) {
-            finish();
+            e.printStackTrace();
         }
 
-        map.addMapObject(new MapMarker(destination, myImage));
+        map.addMapObject(new MapMarker(destination, destinationMarkerImage));
 
         map.setZoomLevel(35);
 
@@ -244,9 +224,7 @@ public class HereMapsActivity extends AppCompatActivity {
         RouteManager.Error error =
                 routeManager.calculateRoute(routePlan, routeManagerListener);
         if (error != RouteManager.Error.NONE) {
-            Toast.makeText(getApplicationContext(),
-                    "Route calculation failed with: " + error.toString(),
-                    Toast.LENGTH_SHORT)
+            Toast.makeText(getApplicationContext(), "Route calculation failed with: " + error.toString(), Toast.LENGTH_SHORT)
                     .show();
         }
     }
@@ -274,13 +252,13 @@ public class HereMapsActivity extends AppCompatActivity {
                 .withOnDrawerItemClickListener((view, i, iDrawerItem) -> {
                     Timber.d("Item " + Integer.toString(i) + " Clicked");
                     switch (i) {
-                        case 1:
+                        case 0:
                             Emergency.makeEmergencyCall(this);
                             break;
-                        case 2:
+                        case 1:
                             // Emergency.makeEmergencySMS(this, currentLocation);
                             break;
-                        case 3:
+                        case 2:
 
                             break;
                     }
@@ -311,7 +289,6 @@ public class HereMapsActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
         switch (item.getItemId()) {
             case R.id.action_search:
 
