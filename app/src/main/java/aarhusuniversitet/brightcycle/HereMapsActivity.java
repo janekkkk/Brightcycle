@@ -317,7 +317,7 @@ public class HereMapsActivity extends AppCompatActivity {
 
                 return true;
             case R.id.action_settings:
-                Intent intent = new Intent(this, HereMapsActivity.class);
+                Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
                 return true;
             default:
