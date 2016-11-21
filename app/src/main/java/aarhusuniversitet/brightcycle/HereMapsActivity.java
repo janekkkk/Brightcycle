@@ -1,5 +1,6 @@
 package aarhusuniversitet.brightcycle;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -316,7 +317,8 @@ public class HereMapsActivity extends AppCompatActivity {
 
                 return true;
             case R.id.action_settings:
-
+                Intent intent = new Intent(this, HereMapsActivity.class);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
