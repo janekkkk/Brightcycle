@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -319,23 +320,6 @@ public class HereMapsActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == MaterialSearchView.REQUEST_VOICE && resultCode == RESULT_OK) {
-            ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-            if (matches != null && matches.size() > 0) {
-                String searchWrd = matches.get(0);
-                if (!TextUtils.isEmpty(searchWrd)) {
-                    searchView.setQuery(searchWrd, false);
-                }
-            }
-
-            return;
-        }
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
-
     // Example Search request listener
     class SuggestionQueryListener implements ResultListener<List<String>> {
         @Override
@@ -344,24 +328,18 @@ public class HereMapsActivity extends AppCompatActivity {
                 // Handle error
                 // ...
             } else {
-
                 searchView.addSuggestions(data);
-
-                for (String r : data) {
-                    //Process result data
-                    Timber.d(r);
-                }
             }
         }
     }
 
-        private void getSearchSuggestions(String term) {
+    private void getSearchSuggestions(String term) {
         try {
             TextSuggestionRequest request = null;
             request = new TextSuggestionRequest(term).setSearchCenter(map.getCenter());
 
             if (request.execute(new SuggestionQueryListener()) !=
-                    ErrorCode.NONE ) {
+                    ErrorCode.NONE) {
                 //Handle request error
                 //...
             }
@@ -375,6 +353,7 @@ public class HereMapsActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 getSearchSuggestions(query);
+                searchView.setQuery(searchView.getSuggestionAtPosition(0), false);
                 return false;
             }
 
@@ -384,5 +363,32 @@ public class HereMapsActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        // Do something when the suggestion list is clicked.
+        searchView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String suggestion = searchView.getSuggestionAtPosition(position);
+                searchView.setQuery(suggestion, true);
+            }
+        });
     }
+
+    // Voice search
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == MaterialSearchView.REQUEST_VOICE && resultCode == RESULT_OK) {
+            ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            if (matches != null && matches.size() > 0) {
+                String searchWord = matches.get(0);
+                if (!TextUtils.isEmpty(searchWord)) {
+                    searchView.setQuery(searchWord, false);
+                    getSearchSuggestions(searchWord);
+                }
+            }
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
 }
