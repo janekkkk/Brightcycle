@@ -27,6 +27,9 @@ import com.here.android.mpa.routing.RouteManager;
 import com.here.android.mpa.routing.RouteOptions;
 import com.here.android.mpa.routing.RoutePlan;
 import com.here.android.mpa.routing.RouteResult;
+import com.here.android.mpa.search.ErrorCode;
+import com.here.android.mpa.search.ResultListener;
+import com.here.android.mpa.search.TextSuggestionRequest;
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
 import com.mikepenz.materialdrawer.holder.ImageHolder;
@@ -75,6 +78,9 @@ public class HereMapsActivity extends AppCompatActivity {
 
         posManager = PositioningManager.getInstance();
         initHereMaps();
+
+
+        createSearchSuggestionsOnTextChange();
     }
 
     @Override
@@ -145,7 +151,6 @@ public class HereMapsActivity extends AppCompatActivity {
 
                 // Display position indicator
                 map.getPositionIndicator().setVisible(true);
-
             } else {
                 Timber.d("Initializing Here Maps Failed...");
             }
@@ -306,6 +311,15 @@ public class HereMapsActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if (searchView.isOpen()) {
+            searchView.closeSearch();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == MaterialSearchView.REQUEST_VOICE && resultCode == RESULT_OK) {
             ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
@@ -319,5 +333,56 @@ public class HereMapsActivity extends AppCompatActivity {
             return;
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+
+    // Example Search request listener
+    class SuggestionQueryListener implements ResultListener<List<String>> {
+        @Override
+        public void onCompleted(List<String> data, ErrorCode error) {
+            if (error != ErrorCode.NONE) {
+                // Handle error
+                // ...
+            } else {
+
+                searchView.addSuggestions(data);
+
+                for (String r : data) {
+                    //Process result data
+                    Timber.d(r);
+                }
+            }
+        }
+    }
+
+        private void getSearchSuggestions(String term) {
+        try {
+            TextSuggestionRequest request = null;
+            request = new TextSuggestionRequest(term).setSearchCenter(map.getCenter());
+
+            if (request.execute(new SuggestionQueryListener()) !=
+                    ErrorCode.NONE ) {
+                //Handle request error
+                //...
+            }
+        } catch (IllegalArgumentException ex) {
+            //Handle invalid create search request parameters
+        }
+    }
+
+    private void createSearchSuggestionsOnTextChange() {
+        searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                getSearchSuggestions(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                getSearchSuggestions(newText);
+                return false;
+            }
+        });
     }
 }
