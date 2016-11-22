@@ -20,6 +20,7 @@ import com.here.android.mpa.common.GeoPosition;
 import com.here.android.mpa.common.Image;
 import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.common.PositioningManager;
+import com.here.android.mpa.guidance.NavigationManager;
 import com.here.android.mpa.mapping.Map;
 import com.here.android.mpa.mapping.MapFragment;
 import com.here.android.mpa.mapping.MapMarker;
@@ -62,6 +63,7 @@ public class HereMapsActivity extends AppCompatActivity {
     private MapFragment mapFragment = null;
     private MapRoute mapRoute = null;
     private PositioningManager posManager;
+    private NavigationManager navigationManager;
 
     private boolean appPaused;
 
@@ -77,9 +79,7 @@ public class HereMapsActivity extends AppCompatActivity {
         createActionBar();
         createAppDrawer();
 
-        posManager = PositioningManager.getInstance();
         initHereMaps();
-
 
         createSearchSuggestionsOnTextChange();
     }
@@ -125,35 +125,45 @@ public class HereMapsActivity extends AppCompatActivity {
             };
 
     private void initHereMaps() {
-        mapFragment = (MapFragment) getFragmentManager().findFragmentById(
-                R.id.mapfragment);
-        mapFragment.init(error -> {
-            if (error == OnEngineInitListener.Error.NONE) {
-                // retrieve a reference of the map from the map fragment
-                map = mapFragment.getMap();
 
-                // Set current location indicator
-                map.getPositionIndicator().setVisible(true);
+        final MapFragment mapFragment = (MapFragment)
+                getFragmentManager().findFragmentById(R.id.mapfragment);
+        // initialize the Map Fragment and
+        // retrieve the map that is associated to the fragment
+        mapFragment.init(new OnEngineInitListener() {
+            @Override
+            public void onEngineInitializationCompleted(
+                    OnEngineInitListener.Error error) {
+                if (error == OnEngineInitListener.Error.NONE) {
+                    // retrieve a reference of the map from the map fragment
+                    map = mapFragment.getMap();
 
-                // Set the map center to the Aarhus region
-                map.setCenter(new GeoCoordinate(56.1629, 10.2039, 0.0),
-                        Map.Animation.LINEAR);
-                // Set the zoom level to the average between min and max
-                map.setZoomLevel(
-                        (map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
+                    // Set current location indicator
+                    map.getPositionIndicator().setVisible(true);
 
-                posManager = PositioningManager.getInstance();
-                posManager.start(
-                        PositioningManager.LocationMethod.GPS_NETWORK);
+                    map.setCenter(new GeoCoordinate(51.51,-0.11),
+                            Map.Animation.NONE );
+                    // Set the map center to the Aarhus region
+                    map.setCenter(new GeoCoordinate(56.1629, 10.2039, 0.0),
+                            Map.Animation.BOW);
+                    // Set the zoom level to the average between min and max
+                    map.setZoomLevel(
+                            (map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
 
-                // Register positioning listener
-                posManager.addListener(
-                        new WeakReference<PositioningManager.OnPositionChangedListener>(positionListener));
+                    posManager = PositioningManager.getInstance();
+                    posManager.start(
+                            PositioningManager.LocationMethod.GPS_NETWORK);
 
-                // Display position indicator
-                map.getPositionIndicator().setVisible(true);
-            } else {
-                Timber.d("Initializing Here Maps Failed...");
+                    // Register positioning listener
+                    posManager.addListener(
+                            new WeakReference<PositioningManager.OnPositionChangedListener>(positionListener));
+
+                    // Display position indicator
+                    map.getPositionIndicator().setVisible(true);
+                } else {
+                    Timber.d("Initializing Here Maps Failed...");
+                }
+
             }
         });
 
@@ -228,7 +238,7 @@ public class HereMapsActivity extends AppCompatActivity {
 
         map.addMapObject(new MapMarker(destination, destinationMarkerImage));
 
-        map.setZoomLevel(35);
+        map.setZoomLevel(40);
 
         // 5. Retrieve Routing information via RouteManagerListener
         RouteManager.Error error =

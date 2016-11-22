@@ -26,22 +26,16 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" />
-
-        <meta-data
-            android:name="com.here.android.maps.appid"
-            android:value="@string/here_app_id" />
-
-        <meta-data
-            android:name="com.here.android.maps.apptoken"
-            android:value="@string/here_app_key" />
+        <meta-data android:name="com.here.android.maps.appid"
+            android:value="@string/here_app_id"/>
+        <meta-data android:name="com.here.android.maps.apptoken"
+            android:value="@string/here_app_token"/>
+        <meta-data android:name="com.here.android.maps.license.key"
+            android:value="@string/here_app_license"/>
 
         <activity
             android:name=".MapsActivity"
@@ -61,6 +55,17 @@
             android:exported="false"
             android:protectionLevel="signature"
             android:syncable="true"/>
+
+        <service
+            android:name="com.here.android.mpa.service.MapService"
+            android:label="HereMapService"
+            android:process="global.Here.Map.Service.v2"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="com.here.android.mpa.service.MapService" >
+                </action>
+            </intent-filter>
+        </service>
 
     </application>
 

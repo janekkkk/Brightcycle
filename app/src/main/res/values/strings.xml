@@ -8,8 +8,11 @@
     <string name="disconnect">Disconnect</string>
     <string name="title_activity_maps">Brightcycle</string>
     <string name="title_activity_settings">Settings</string>
-    <string name="here_app_id">FiKj3Ivux42Aw9Fl7Pbu</string>
-    <string name="here_app_key">_ZJpfmnId1izkEw5_Sspjw</string>
+    <string name="here_app_id">Pxq2tBqfzJlKGT87y45z</string>
+    <string name="here_app_token">IRPw2kXbVk0-r6bkNJgTaw</string>
+    <string name="here_app_license">fAM7F3sVGSJfjNgPqz/hEm0xBccXtSLU1uWhhBAfsUQb618TtE8OqdSxEcVOjb0Qb723RhC/wz/WBW65luJ+2KcdHYwh8flMI5yPp084rdvKjm8ZIsqbC3NvI2aNUdlhX20GOsBKFync1DmDcXZ5WF8SCbYXLeTb2OyHZiUTj9qj6+LVXu//oAreQzhjkCV+hn6SUYyJEevMAj89gCzvnjhzeBn95xY9sSMSP3LbHCx/dOea6eZ04VDylAoE5k6SI0a56GgYVof0YEvnhPy/mJ0UPKcTGvl4wB3KKaM0Af1CO+EiwXiyGzbeBpUCwhMtY2K9Dzwv9K0VpFmhs13ttpq0ixY1zVVtGGjJddItURmwAcn/NFF35rV6kAHDzM9e55pe7ujRq168CIEVPv9la7JdQEzt9SURp6DN9ECWgE+cTuH/3PkE2tTfU5UmfFju3I96kDI/ZsST7nUg5X7nMM/vxBu9Rm9fohoVo2WiahjDS0vwa0DOikgs+4AMjhJnEHXX+wRE5eMcDqcvoyrEtBNFIAGLlf2qeV2YlXPWov1bQhE51k+6amS2JrNod6aUi/LwSVjzzdlLCRI1lqr50d9KGGOpvo2JrXmDyEcWP1oen2Bo0uMkpdUpQbmnBJPS4bvylpWlkxQZIRdV+e0TqFQ4XRrlfMHgEKD2ftSw/lQ=</string>
+
+
     <string name="label_button_getdirections">Get Directions</string>
     <string name="textview_routecoordinates_2waypoints">Press "Get Directions" button to calculate a route:\nStart: Burnaby\nEnd: YVR Airport</string>
 
