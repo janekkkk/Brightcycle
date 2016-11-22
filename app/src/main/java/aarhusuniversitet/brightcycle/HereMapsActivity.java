@@ -2,14 +2,15 @@ package aarhusuniversitet.brightcycle;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.here.android.mpa.common.GeoBoundingBox;
@@ -35,8 +36,10 @@ import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
+import br.com.mauker.materialsearchview.MaterialSearchView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -48,6 +51,8 @@ public class HereMapsActivity extends AppCompatActivity {
     Toolbar toolbar;
     @BindView(R.id.btnGetDirections)
     Button btnGetDirections;
+    @BindView(R.id.search_view)
+    MaterialSearchView searchView;
 
     private Map map = null;
     private MapFragment mapFragment = null;
@@ -112,7 +117,6 @@ public class HereMapsActivity extends AppCompatActivity {
                 }
             };
 
-
     private void initHereMaps() {
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(
                 R.id.mapfragment);
@@ -137,7 +141,7 @@ public class HereMapsActivity extends AppCompatActivity {
 
                 // Register positioning listener
                 posManager.addListener(
-                        new WeakReference<>(positionListener));
+                        new WeakReference<PositioningManager.OnPositionChangedListener>(positionListener));
 
                 // Display position indicator
                 map.getPositionIndicator().setVisible(true);
@@ -208,7 +212,7 @@ public class HereMapsActivity extends AppCompatActivity {
         GeoCoordinate destination = new GeoCoordinate(56.156491, 10.211105);
         routePlan.addWaypoint(destination);
 
-        Image destinationMarkerImage =  new Image();
+        Image destinationMarkerImage = new Image();
 
         try {
             destinationMarkerImage.setImageResource(R.drawable.ic_action_location);
@@ -283,7 +287,6 @@ public class HereMapsActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_main, menu);
-
         return true;
     }
 
@@ -291,7 +294,7 @@ public class HereMapsActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_search:
-
+                searchView.openSearch();
                 return true;
             case R.id.action_settings:
                 Intent intent = new Intent(this, SettingsActivity.class);
@@ -300,5 +303,21 @@ public class HereMapsActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == MaterialSearchView.REQUEST_VOICE && resultCode == RESULT_OK) {
+            ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            if (matches != null && matches.size() > 0) {
+                String searchWrd = matches.get(0);
+                if (!TextUtils.isEmpty(searchWrd)) {
+                    searchView.setQuery(searchWrd, false);
+                }
+            }
+
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

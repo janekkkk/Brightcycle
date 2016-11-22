@@ -38,6 +38,7 @@
         <meta-data
             android:name="com.here.android.maps.appid"
             android:value="@string/here_app_id" />
+
         <meta-data
             android:name="com.here.android.maps.apptoken"
             android:value="@string/here_app_key" />
@@ -45,12 +46,22 @@
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" />
+
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" />
+
         <activity
             android:name=".HereMapsActivity"
             android:label="@string/title_activity_here_maps" />
+
+        <provider
+            android:name="br.com.mauker.materialsearchview.db.HistoryProvider"
+            android:authorities="br.com.mauker.materialsearchview.searchhistorydatabase"
+            android:exported="false"
+            android:protectionLevel="signature"
+            android:syncable="true"/>
+
     </application>
 
 </manifest>
