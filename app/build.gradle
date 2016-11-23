@@ -51,5 +51,6 @@ dependencies {
     apt 'org.parceler:parceler:1.1.1'
     compile group: 'com.google.code.gson', name: 'gson', version: '2.2.4'
     compile 'br.com.mauker.materialsearchview:materialsearchview:1.2.0'
+    compile 'com.scalified:fab:1.1.3'
 }
 

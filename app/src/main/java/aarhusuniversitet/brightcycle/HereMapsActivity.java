@@ -11,7 +11,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 
 import com.here.android.mpa.common.GeoBoundingBox;
 import com.here.android.mpa.common.GeoCoordinate;
@@ -40,6 +39,7 @@ import com.mikepenz.materialdrawer.holder.ImageHolder;
 import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
+import com.scalified.fab.ActionButton;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -56,17 +56,17 @@ public class HereMapsActivity extends AppCompatActivity {
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
-    @BindView(R.id.btnGetDirections)
-    Button btnGetDirections;
     @BindView(R.id.search_view)
     MaterialSearchView searchView;
+    @BindView(R.id.fabButton)
+    ActionButton fabButton;
 
     private Map map = null;
     private MapFragment mapFragment = null;
     private MapRoute mapRoute = null;
     private PositioningManager posManager;
     private NavigationManager navigationManager;
-    CoreRouter coreRouter;
+    private CoreRouter coreRouter;
     private boolean appPaused;
     private Route route;
 
@@ -85,6 +85,14 @@ public class HereMapsActivity extends AppCompatActivity {
         initHereMaps();
 
         createSearchSuggestionsOnTextChange();
+
+        initFabButton();
+    }
+
+    private void initFabButton() {
+        fabButton.setImageResource(R.drawable.ic_navigation);
+        fabButton.setButtonColor(getResources().getColor(R.color.fab_material_amber_500));
+        fabButton.setButtonColorPressed(getResources().getColor(R.color.fab_material_amber_900));
     }
 
     public void onResume() {
@@ -139,70 +147,65 @@ public class HereMapsActivity extends AppCompatActivity {
         final MapFragment mapFragment = (MapFragment)
                 getFragmentManager().findFragmentById(R.id.mapfragment);
 
-        mapFragment.init(new OnEngineInitListener() {
-            @Override
-            public void onEngineInitializationCompleted(
-                    OnEngineInitListener.Error error) {
-                if (error == OnEngineInitListener.Error.NONE) {
-                    // retrieve a reference of the map from the map fragment
-                    map = mapFragment.getMap();
-                    coreRouter = new CoreRouter();
-                    // Set current location indicator
-                    map.getPositionIndicator().setVisible(true);
+        mapFragment.init(error -> {
+            if (error == OnEngineInitListener.Error.NONE) {
+                // retrieve a reference of the map from the map fragment
+                map = mapFragment.getMap();
+                coreRouter = new CoreRouter();
+                // Set current location indicator
+                map.getPositionIndicator().setVisible(true);
 
-                    // Set the map center to the Aarhus region
-                    map.setCenter(new GeoCoordinate(56.14703396, 10.20783076),
-                            Map.Animation.NONE);
+                // Set the map center to the Aarhus region
+                map.setCenter(new GeoCoordinate(56.14703396, 10.20783076),
+                        Map.Animation.NONE);
 
-                    // Set the zoom level to the average between min and max
-                    map.setZoomLevel(
-                            (map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
+                // Set the zoom level to the average between min and max
+                map.setZoomLevel(
+                        (map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
 
-                    // Set position manager to get current location.
-                    posManager = PositioningManager.getInstance();
-                    if (posManager != null) {
-                        posManager.start(
-                                PositioningManager.LocationMethod.GPS_NETWORK);
-                    }
-
-                    posManager.addListener(
-                            new WeakReference<PositioningManager.OnPositionChangedListener>(positionListener));
-
-                } else {
-                    Timber.d("Initializing Here Maps Failed...");
+                // Set position manager to get current location.
+                posManager = PositioningManager.getInstance();
+                if (posManager != null) {
+                    posManager.start(
+                            PositioningManager.LocationMethod.GPS_NETWORK);
                 }
 
+                posManager.addListener(
+                        new WeakReference<PositioningManager.OnPositionChangedListener>(positionListener));
+
+            } else {
+                Timber.d("Initializing Here Maps Failed...");
             }
+
         });
 
     }
 
-    @OnClick(R.id.btnStartNavigation)
+    @OnClick(R.id.fabButton)
     public void startNavigation(View view) {
-        NavigationManager navigationManager = NavigationManager.getInstance();
-        if(map != null && route != null){
+        if (map != null && route != null) {
+            navigationManager = NavigationManager.getInstance();
             navigationManager.setMap(map);
             NavigationManager.Error error = navigationManager.startNavigation(route);
+            Timber.d("Navigation started!");
 
-            if(error != null){
+            if (!error.equals("NONE")) {
                 Timber.d("Navigation starting error: " + error);
             }
-        }
-        else {
+        } else {
             Timber.d("Navigation starting error...");
         }
 
     }
 
-    @OnClick(R.id.btnGetDirections)
-    public void getDirections(View view) {
-        // 1. clear previous results
+    public void getDirections() {
+        // Clear previous results
         if (map != null && mapRoute != null) {
             map.removeMapObject(mapRoute);
             mapRoute = null;
         }
 
-        // 3. Select routing options via RoutingMode
+        // Select routing options via RoutingMode
         RoutePlan routePlan = new RoutePlan();
 
         RouteOptions routeOptions = new RouteOptions();
@@ -210,7 +213,7 @@ public class HereMapsActivity extends AppCompatActivity {
         routeOptions.setRouteType(RouteOptions.Type.FASTEST);
         routePlan.setRouteOptions(routeOptions);
 
-        // 4. Select Waypoints for your routes
+        // Select Waypoints for your routes
         // START
         if (posManager != null) {
             GeoCoordinate startPoint = posManager.getPosition().getCoordinate();
@@ -236,13 +239,14 @@ public class HereMapsActivity extends AppCompatActivity {
 
     private class RouteListener implements CoreRouter.Listener {
 
+        @Override
         public void onProgress(int percentage) {
         }
 
-        // Method defined in Listener
+        @Override
         public void onCalculateRouteFinished(List<RouteResult> routeResult, RoutingError error) {
             // If the route was calculated successfully
-            if (error == RoutingError.NONE && routeResult.get(0) != null) {
+            if (error == RoutingError.NONE && routeResult.get(0).getRoute() != null) {
                 // create a map route object and place it on the map
                 route = routeResult.get(0).getRoute();
                 mapRoute = new MapRoute(route);
@@ -250,11 +254,10 @@ public class HereMapsActivity extends AppCompatActivity {
 
                 // Get the bounding box containing the route and zoom in
                 GeoBoundingBox gbb = route.getBoundingBox();
-                map.zoomTo(gbb, Map.Animation.LINEAR,
+                map.zoomTo(gbb, Map.Animation.BOW,
                         Map.MOVE_PRESERVE_ORIENTATION);
-                //routeResult.getRoute().getManeuvers().size()
             } else {
-                Timber.d("Route calculation failed... " + error.toString());
+                Timber.d("Route calculation failed... " + error);
             }
 
         }
@@ -341,7 +344,6 @@ public class HereMapsActivity extends AppCompatActivity {
         }
     }
 
-    // Example Search request listener
     class SuggestionQueryListener implements ResultListener<List<String>> {
         @Override
         public void onCompleted(List<String> data, ErrorCode error) {
@@ -375,6 +377,7 @@ public class HereMapsActivity extends AppCompatActivity {
             public boolean onQueryTextSubmit(String query) {
                 getSearchSuggestions(query);
                 searchView.setQuery(searchView.getSuggestionAtPosition(0), false);
+                getDirections();
                 return false;
             }
 
@@ -391,6 +394,7 @@ public class HereMapsActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String suggestion = searchView.getSuggestionAtPosition(position);
                 searchView.setQuery(suggestion, true);
+                getDirections();
             }
         });
     }
