@@ -1,6 +1,8 @@
 package aarhusuniversitet.brightcycle;
 
 import android.content.Intent;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +13,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 
 import com.here.android.mpa.common.GeoBoundingBox;
 import com.here.android.mpa.common.GeoCoordinate;
@@ -81,11 +84,8 @@ public class HereMapsActivity extends AppCompatActivity {
 
         createActionBar();
         createAppDrawer();
-
         initHereMaps();
-
         createSearchSuggestionsOnTextChange();
-
         initFabButton();
     }
 
@@ -143,7 +143,6 @@ public class HereMapsActivity extends AppCompatActivity {
             };
 
     private void initHereMaps() {
-
         final MapFragment mapFragment = (MapFragment)
                 getFragmentManager().findFragmentById(R.id.mapfragment);
 
@@ -152,7 +151,17 @@ public class HereMapsActivity extends AppCompatActivity {
                 // retrieve a reference of the map from the map fragment
                 map = mapFragment.getMap();
                 coreRouter = new CoreRouter();
+
                 // Set current location indicator
+                /*
+                Image destinationMarkerImage = new Image();
+                try {
+                    destinationMarkerImage.setImageResource(R.drawable.ic_adjust);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                map.getPositionIndicator().setMarker(destinationMarkerImage);
+                */
                 map.getPositionIndicator().setVisible(true);
 
                 // Set the map center to the Aarhus region
@@ -176,7 +185,6 @@ public class HereMapsActivity extends AppCompatActivity {
             } else {
                 Timber.d("Initializing Here Maps Failed...");
             }
-
         });
 
     }
