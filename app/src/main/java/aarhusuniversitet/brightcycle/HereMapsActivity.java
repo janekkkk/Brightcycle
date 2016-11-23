@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.here.android.mpa.common.GeoBoundingBox;
 import com.here.android.mpa.common.GeoCoordinate;
@@ -25,10 +24,13 @@ import com.here.android.mpa.mapping.Map;
 import com.here.android.mpa.mapping.MapFragment;
 import com.here.android.mpa.mapping.MapMarker;
 import com.here.android.mpa.mapping.MapRoute;
-import com.here.android.mpa.routing.RouteManager;
+import com.here.android.mpa.routing.CoreRouter;
+import com.here.android.mpa.routing.Route;
 import com.here.android.mpa.routing.RouteOptions;
 import com.here.android.mpa.routing.RoutePlan;
 import com.here.android.mpa.routing.RouteResult;
+import com.here.android.mpa.routing.RouteWaypoint;
+import com.here.android.mpa.routing.RoutingError;
 import com.here.android.mpa.search.ErrorCode;
 import com.here.android.mpa.search.ResultListener;
 import com.here.android.mpa.search.TextSuggestionRequest;
@@ -64,8 +66,9 @@ public class HereMapsActivity extends AppCompatActivity {
     private MapRoute mapRoute = null;
     private PositioningManager posManager;
     private NavigationManager navigationManager;
-
+    CoreRouter coreRouter;
     private boolean appPaused;
+    private Route route;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +85,15 @@ public class HereMapsActivity extends AppCompatActivity {
         initHereMaps();
 
         createSearchSuggestionsOnTextChange();
+    }
+
+    public void onResume() {
+        super.onResume();
+        appPaused = false;
+        if (posManager != null) {
+            posManager.start(
+                    PositioningManager.LocationMethod.GPS_NETWORK);
+        }
     }
 
     @Override
@@ -104,17 +116,15 @@ public class HereMapsActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    // Define positioning listener
+    // Current location listener
     private PositioningManager.OnPositionChangedListener positionListener = new
             PositioningManager.OnPositionChangedListener() {
 
                 public void onPositionUpdated(PositioningManager.LocationMethod method,
                                               GeoPosition position, boolean isMapMatched) {
-                    // set the center only when the app is in the foreground
-                    // to reduce CPU consumption
                     if (!appPaused) {
                         map.setCenter(position.getCoordinate(),
-                                Map.Animation.LINEAR);
+                                Map.Animation.BOW);
                     }
                 }
 
@@ -128,8 +138,7 @@ public class HereMapsActivity extends AppCompatActivity {
 
         final MapFragment mapFragment = (MapFragment)
                 getFragmentManager().findFragmentById(R.id.mapfragment);
-        // initialize the Map Fragment and
-        // retrieve the map that is associated to the fragment
+
         mapFragment.init(new OnEngineInitListener() {
             @Override
             public void onEngineInitializationCompleted(
@@ -137,29 +146,28 @@ public class HereMapsActivity extends AppCompatActivity {
                 if (error == OnEngineInitListener.Error.NONE) {
                     // retrieve a reference of the map from the map fragment
                     map = mapFragment.getMap();
-
+                    coreRouter = new CoreRouter();
                     // Set current location indicator
                     map.getPositionIndicator().setVisible(true);
 
-                    map.setCenter(new GeoCoordinate(51.51,-0.11),
-                            Map.Animation.NONE );
                     // Set the map center to the Aarhus region
-                    map.setCenter(new GeoCoordinate(56.1629, 10.2039, 0.0),
+                    map.setCenter(new GeoCoordinate(56.14703396, 10.20783076, 0.0),
                             Map.Animation.BOW);
+
                     // Set the zoom level to the average between min and max
                     map.setZoomLevel(
                             (map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
 
+                    // Set position manager to get current location.
                     posManager = PositioningManager.getInstance();
-                    posManager.start(
-                            PositioningManager.LocationMethod.GPS_NETWORK);
+                    if (posManager != null) {
+                        posManager.start(
+                                PositioningManager.LocationMethod.GPS_NETWORK);
+                    }
 
-                    // Register positioning listener
                     posManager.addListener(
                             new WeakReference<PositioningManager.OnPositionChangedListener>(positionListener));
 
-                    // Display position indicator
-                    map.getPositionIndicator().setVisible(true);
                 } else {
                     Timber.d("Initializing Here Maps Failed...");
                 }
@@ -169,35 +177,22 @@ public class HereMapsActivity extends AppCompatActivity {
 
     }
 
-    private RouteManager.Listener routeManagerListener =
-            new RouteManager.Listener() {
-                public void onCalculateRouteFinished(RouteManager.Error errorCode,
-                                                     List<RouteResult> result) {
+    @OnClick(R.id.btnStartNavigation)
+    public void startNavigation(View view) {
+        NavigationManager navigationManager = NavigationManager.getInstance();
+        if(map != null && route != null){
+            navigationManager.setMap(map);
+            NavigationManager.Error error = navigationManager.startNavigation(route);
 
-                    RouteResult routeResult = result.get(0);
-                    if (errorCode == RouteManager.Error.NONE &&
-                            routeResult.getRoute() != null) {
+            if(error != null){
+                Timber.d("Navigation starting error: " + error);
+            }
+        }
+        else {
+            Timber.d("Navigation starting error...");
+        }
 
-                        // create a map route object and place it on the map
-                        mapRoute = new MapRoute(routeResult.getRoute());
-                        map.addMapObject(mapRoute);
-
-                        // Get the bounding box containing the route and zoom in
-                        GeoBoundingBox gbb = routeResult.getRoute().getBoundingBox();
-                        map.zoomTo(gbb, Map.Animation.LINEAR,
-                                Map.MOVE_PRESERVE_ORIENTATION);
-
-                        //routeResult.getRoute().getManeuvers().size()
-                    } else {
-                        Timber.d("Route calculation failed: %s",
-                                errorCode.toString());
-                    }
-                }
-
-                public void onProgress(int percentage) {
-                    Timber.d("... %d percent done ...", percentage);
-                }
-            };
+    }
 
     @OnClick(R.id.btnGetDirections)
     public void getDirections(View view) {
@@ -206,9 +201,6 @@ public class HereMapsActivity extends AppCompatActivity {
             map.removeMapObject(mapRoute);
             mapRoute = null;
         }
-
-        // 2. Initialize RouteManager
-        RouteManager routeManager = new RouteManager();
 
         // 3. Select routing options via RoutingMode
         RoutePlan routePlan = new RoutePlan();
@@ -221,31 +213,50 @@ public class HereMapsActivity extends AppCompatActivity {
         // 4. Select Waypoints for your routes
         // START
         if (posManager != null) {
-            routePlan.addWaypoint(posManager.getPosition().getCoordinate());
+            GeoCoordinate startPoint = posManager.getPosition().getCoordinate();
+            routePlan.addWaypoint(new RouteWaypoint(startPoint));
+            Timber.d("Startpoint set! LAT:" + posManager.getPosition().getCoordinate().getLatitude() + " LONG:" + posManager.getPosition().getCoordinate().getLongitude());
         }
-
         // END
-        GeoCoordinate destination = new GeoCoordinate(56.156491, 10.211105);
-        routePlan.addWaypoint(destination);
+        GeoCoordinate endPoint = new GeoCoordinate(56.156491, 10.211105);
+        routePlan.addWaypoint(new RouteWaypoint(endPoint));
 
         Image destinationMarkerImage = new Image();
-
         try {
             destinationMarkerImage.setImageResource(R.drawable.ic_action_location);
+            map.addMapObject(new MapMarker(endPoint, destinationMarkerImage));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        map.addMapObject(new MapMarker(destination, destinationMarkerImage));
+        map.setZoomLevel(
+                (map.getMaxZoomLevel() + map.getMinZoomLevel()) / 4);
+        coreRouter.calculateRoute(routePlan, new RouteListener());
+    }
 
-        map.setZoomLevel(40);
+    private class RouteListener implements CoreRouter.Listener {
 
-        // 5. Retrieve Routing information via RouteManagerListener
-        RouteManager.Error error =
-                routeManager.calculateRoute(routePlan, routeManagerListener);
-        if (error != RouteManager.Error.NONE) {
-            Toast.makeText(getApplicationContext(), "Route calculation failed with: " + error.toString(), Toast.LENGTH_SHORT)
-                    .show();
+        public void onProgress(int percentage) {
+        }
+
+        // Method defined in Listener
+        public void onCalculateRouteFinished(List<RouteResult> routeResult, RoutingError error) {
+            // If the route was calculated successfully
+            if (error == RoutingError.NONE && routeResult.get(0) != null) {
+                // create a map route object and place it on the map
+                route = routeResult.get(0).getRoute();
+                mapRoute = new MapRoute(route);
+                map.addMapObject(mapRoute);
+
+                // Get the bounding box containing the route and zoom in
+                GeoBoundingBox gbb = route.getBoundingBox();
+                map.zoomTo(gbb, Map.Animation.LINEAR,
+                        Map.MOVE_PRESERVE_ORIENTATION);
+                //routeResult.getRoute().getManeuvers().size()
+            } else {
+                Timber.d("Route calculation failed... " + error.toString());
+            }
+
         }
     }
 

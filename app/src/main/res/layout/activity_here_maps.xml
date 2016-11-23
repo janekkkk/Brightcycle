@@ -18,7 +18,16 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:text="@string/label_button_getdirections" />
+            android:text="@string/label_button_getdirections"
+            android:gravity="right|center_vertical" />
+
+        <android.widget.Button
+            android:id="@+id/btnStartNavigation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="false"
+            android:text="Start navigation" />
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
