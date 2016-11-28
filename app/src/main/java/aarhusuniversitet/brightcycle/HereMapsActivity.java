@@ -1,8 +1,6 @@
 package aarhusuniversitet.brightcycle;
 
 import android.content.Intent;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.v7.app.AppCompatActivity;
@@ -13,7 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.here.android.mpa.common.GeoBoundingBox;
 import com.here.android.mpa.common.GeoCoordinate;
@@ -27,6 +25,7 @@ import com.here.android.mpa.mapping.MapFragment;
 import com.here.android.mpa.mapping.MapMarker;
 import com.here.android.mpa.mapping.MapRoute;
 import com.here.android.mpa.routing.CoreRouter;
+import com.here.android.mpa.routing.Maneuver;
 import com.here.android.mpa.routing.Route;
 import com.here.android.mpa.routing.RouteOptions;
 import com.here.android.mpa.routing.RoutePlan;
@@ -47,6 +46,7 @@ import com.scalified.fab.ActionButton;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import br.com.mauker.materialsearchview.MaterialSearchView;
@@ -67,11 +67,12 @@ public class HereMapsActivity extends AppCompatActivity {
     private Map map = null;
     private MapFragment mapFragment = null;
     private MapRoute mapRoute = null;
-    private PositioningManager posManager;
+    private PositioningManager positioningManager;
     private NavigationManager navigationManager;
     private CoreRouter coreRouter;
     private boolean appPaused;
     private Route route;
+    private static final int ROUTE_COLOR = android.graphics.Color.BLUE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,49 +99,64 @@ public class HereMapsActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         appPaused = false;
-        if (posManager != null) {
-            posManager.start(
+        if (positioningManager != null) {
+            positioningManager.start(
                     PositioningManager.LocationMethod.GPS_NETWORK);
         }
-    }
+        if (navigationManager != null && navigationManager
+                .getRunningState() == NavigationManager.NavigationState.PAUSED) {
+            attachNavigationListeners();
 
-    @Override
-    protected void onPause() {
-        if (posManager != null) {
-            posManager.stop();
+            NavigationManager.Error error = navigationManager.resume();
+            if (error != NavigationManager.Error.NONE) {
+                Toast.makeText(getApplicationContext(),
+                        "NavigationManager resume failed: " + error.toString(), Toast.LENGTH_LONG)
+                        .show();
+                return;
+            }
+
+            // Notify navigation listener to update the maneuver billboard and show waypointer
+            m_navigationNewInstructionListener.onNewInstructionEvent();
         }
-        super.onPause();
-        appPaused = true;
     }
 
-    @Override
-    public void onDestroy() {
-        if (posManager != null) {
-            // Cleanup
-            posManager.removeListener(
-                    positionListener);
+        @Override
+        protected void onPause () {
+            if (positioningManager != null) {
+                positioningManager.stop();
+            }
+            super.onPause();
+            appPaused = true;
         }
-        map = null;
-        super.onDestroy();
-    }
 
-    // Current location listener
-    private PositioningManager.OnPositionChangedListener positionListener = new
-            PositioningManager.OnPositionChangedListener() {
+        @Override
+        public void onDestroy () {
+            if (positioningManager != null) {
+                // Cleanup
+                positioningManager.removeListener(
+                        positionListener);
+            }
+            map = null;
+            super.onDestroy();
+        }
 
-                public void onPositionUpdated(PositioningManager.LocationMethod method,
-                                              GeoPosition position, boolean isMapMatched) {
-                    if (!appPaused) {
-                        map.setCenter(position.getCoordinate(),
-                                Map.Animation.BOW);
+        // Current location listener
+        public PositioningManager.OnPositionChangedListener positionListener = new
+                PositioningManager.OnPositionChangedListener() {
+
+                    public void onPositionUpdated(PositioningManager.LocationMethod method,
+                                                  GeoPosition position, boolean isMapMatched) {
+                        if (!appPaused) {
+                            map.setCenter(position.getCoordinate(),
+                                    Map.Animation.BOW);
+                        }
                     }
-                }
 
-                public void onPositionFixChanged(PositioningManager.LocationMethod method,
-                                                 PositioningManager.LocationStatus status) {
-                    Timber.d("Position changed: " + status.name());
-                }
-            };
+                    public void onPositionFixChanged(PositioningManager.LocationMethod method,
+                                                     PositioningManager.LocationStatus status) {
+                        Timber.d("Position changed: " + status.name());
+                    }
+                };
 
     private void initHereMaps() {
         final MapFragment mapFragment = (MapFragment)
@@ -153,15 +169,6 @@ public class HereMapsActivity extends AppCompatActivity {
                 coreRouter = new CoreRouter();
 
                 // Set current location indicator
-                /*
-                Image destinationMarkerImage = new Image();
-                try {
-                    destinationMarkerImage.setImageResource(R.drawable.ic_adjust);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                map.getPositionIndicator().setMarker(destinationMarkerImage);
-                */
                 map.getPositionIndicator().setVisible(true);
 
                 // Set the map center to the Aarhus region
@@ -173,17 +180,17 @@ public class HereMapsActivity extends AppCompatActivity {
                         (map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
 
                 // Set position manager to get current location.
-                posManager = PositioningManager.getInstance();
-                if (posManager != null) {
-                    posManager.start(
+                positioningManager = PositioningManager.getInstance();
+                if (positioningManager != null) {
+                    positioningManager.start(
                             PositioningManager.LocationMethod.GPS_NETWORK);
                 }
 
-                posManager.addListener(
+                positioningManager.addListener(
                         new WeakReference<PositioningManager.OnPositionChangedListener>(positionListener));
 
             } else {
-                Timber.d("Initializing Here Maps Failed...");
+                Timber.d("Initializing Here Maps Failed... " + error);
             }
         });
 
@@ -194,16 +201,20 @@ public class HereMapsActivity extends AppCompatActivity {
         if (map != null && route != null) {
             navigationManager = NavigationManager.getInstance();
             navigationManager.setMap(map);
+            navigationManager.setMapUpdateMode(NavigationManager.MapUpdateMode.ROADVIEW);
+
             NavigationManager.Error error = navigationManager.startNavigation(route);
             Timber.d("Navigation started!");
 
-            if (!error.equals("NONE")) {
+            if (error != NavigationManager.Error.NONE) {
                 Timber.d("Navigation starting error: " + error);
+                navigationManager.setMap(null);
             }
         } else {
             Timber.d("Navigation starting error...");
         }
-
+        navigationManager
+                .setNaturalGuidanceMode(EnumSet.of(NavigationManager.NaturalGuidanceMode.JUNCTION));
     }
 
     public void getDirections() {
@@ -223,10 +234,10 @@ public class HereMapsActivity extends AppCompatActivity {
 
         // Select Waypoints for your routes
         // START
-        if (posManager != null) {
-            GeoCoordinate startPoint = posManager.getPosition().getCoordinate();
+        if (positioningManager != null) {
+            GeoCoordinate startPoint = positioningManager.getPosition().getCoordinate();
             routePlan.addWaypoint(new RouteWaypoint(startPoint));
-            Timber.d("Startpoint set! LAT:" + posManager.getPosition().getCoordinate().getLatitude() + " LONG:" + posManager.getPosition().getCoordinate().getLongitude());
+            Timber.d("Startpoint set! LAT:" + positioningManager.getPosition().getCoordinate().getLatitude() + " LONG:" + positioningManager.getPosition().getCoordinate().getLongitude());
         }
         // END
         GeoCoordinate endPoint = new GeoCoordinate(56.156491, 10.211105);
@@ -267,7 +278,6 @@ public class HereMapsActivity extends AppCompatActivity {
             } else {
                 Timber.d("Route calculation failed... " + error);
             }
-
         }
     }
 
@@ -407,6 +417,119 @@ public class HereMapsActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Attaches listeners to navigation manager.
+     */
+    private void attachNavigationListeners() {
+        if (navigationManager != null) {
+            navigationManager
+                    .addPositionListener(new WeakReference<NavigationManager.PositionListener>(
+                            m_navigationPositionListener));
+            navigationManager.addNewInstructionEventListener(
+                    new WeakReference<NavigationManager.NewInstructionEventListener>(
+                            m_navigationNewInstructionListener));
+            navigationManager.addNavigationManagerEventListener(
+                    new WeakReference<NavigationManager.NavigationManagerEventListener>(
+                            m_navigationListener));
+            navigationManager
+                    .addRerouteListener(new WeakReference<NavigationManager.RerouteListener>(
+                            m_navigationRerouteListener));
+        }
+    }
+
+    /**
+     * Detaches listeners from navigation manager.
+     */
+    private void detachNavigationListeners() {
+        if (navigationManager != null) {
+            navigationManager.removeRerouteListener(m_navigationRerouteListener);
+            navigationManager.removeNavigationManagerEventListener(m_navigationListener);
+            navigationManager
+                    .removeNewInstructionEventListener(m_navigationNewInstructionListener);
+            navigationManager.removePositionListener(m_navigationPositionListener);
+        }
+    }
+
+    // Called on UI thread
+    private final NavigationManager.NavigationManagerEventListener m_navigationListener = new NavigationManager.NavigationManagerEventListener() {
+        @Override
+        public void onEnded(final NavigationManager.NavigationMode mode) {
+            // NOTE: this method is called in both cases when destination is reached and when
+            // NavigationManager is stopped.
+            Toast.makeText(getApplicationContext(), "Destination reached!", Toast.LENGTH_LONG)
+                    .show();
+
+            //hideWaypointerObject();
+
+            // Revert to default behavior
+            navigationManager.setMapUpdateMode(NavigationManager.MapUpdateMode.NONE);
+            navigationManager.setTrafficAvoidanceMode(NavigationManager.TrafficAvoidanceMode.DISABLE);
+            navigationManager.setMap(null);
+        }
+
+        @Override
+        public void onRouteUpdated(final Route updatedRoute) {
+            // This does not happen on re-route
+            Toast.makeText(getApplicationContext(), "Your route was udated!", Toast.LENGTH_LONG)
+                    .show();
+
+            map.removeMapObject(mapRoute);
+            mapRoute = new MapRoute(updatedRoute);
+            showLiveSightRoute();
+        }
+    };
+
+    // Called on UI thread
+    private final NavigationManager.RerouteListener m_navigationRerouteListener = new NavigationManager.RerouteListener() {
+        @Override
+        public void onRerouteEnd(Route route) {
+            Toast.makeText(getApplicationContext(), "Your route was udated!", Toast.LENGTH_LONG)
+                    .show();
+
+            map.removeMapObject(mapRoute);
+            mapRoute = new MapRoute(route);
+            showLiveSightRoute();
+        }
+    };
+
+    // Called on UI thread
+    private final NavigationManager.PositionListener m_navigationPositionListener = new NavigationManager.PositionListener() {
+        @Override
+        public void onPositionUpdated(final GeoPosition loc) {
+            if (navigationManager == null) {
+                return;
+            }
+
+            GeoCoordinate coord = loc.getCoordinate();
+            if (coord == null || !coord.isValid()) {
+                return;
+            }
+
+            // Due to false Altitude from map data
+            coord.setAltitude(0);
+
+        }
+    };
+
+    // Called on UI thread
+    private final NavigationManager.NewInstructionEventListener m_navigationNewInstructionListener = new NavigationManager.NewInstructionEventListener() {
+        @Override
+        public void onNewInstructionEvent() {
+            Timber.d("onNewInstructionEvent");
+
+            final Maneuver maneuver = navigationManager.getNextManeuver();
+            if (maneuver == null) {
+                Timber.d("onNewInstructionEvent - invalid maneuver");
+                return;
+            }
+
+            //showWaypointerObject();
+
+            // Show next maneuver
+           // updateNextManeuverBillboard(maneuver);
+        }
+    };
+
     // Voice search
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -424,4 +547,20 @@ public class HereMapsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    /**
+     * Displays calculated route on the map and zooms-in to route's bounding box.
+     */
+    private void showLiveSightRoute() {
+        if (mapRoute == null) {
+            Timber.d("Failed to show route.");
+            return;
+        }
+
+        mapRoute.setColor(ROUTE_COLOR);
+        map.addMapObject(mapRoute);
+
+        // Zoom in
+        Route mainRoute = mapRoute.getRoute();
+        map.zoomTo(mainRoute.getBoundingBox(), Map.Animation.BOW, Map.MOVE_PRESERVE_ORIENTATION);
+    }
 }
