@@ -10,7 +10,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.here.android.mpa.common.GeoBoundingBox;
@@ -33,6 +32,8 @@ import com.here.android.mpa.routing.RouteResult;
 import com.here.android.mpa.routing.RouteWaypoint;
 import com.here.android.mpa.routing.RoutingError;
 import com.here.android.mpa.search.ErrorCode;
+import com.here.android.mpa.search.GeocodeRequest;
+import com.here.android.mpa.search.Location;
 import com.here.android.mpa.search.ResultListener;
 import com.here.android.mpa.search.TextSuggestionRequest;
 import com.mikepenz.materialdrawer.Drawer;
@@ -119,44 +120,44 @@ public class HereMapsActivity extends AppCompatActivity {
         }
     }
 
-        @Override
-        protected void onPause () {
-            if (positioningManager != null) {
-                positioningManager.stop();
-            }
-            detachNavigationListeners();
-            super.onPause();
-            appPaused = true;
+    @Override
+    protected void onPause() {
+        if (positioningManager != null) {
+            positioningManager.stop();
         }
+        detachNavigationListeners();
+        super.onPause();
+        appPaused = true;
+    }
 
-        @Override
-        public void onDestroy () {
-            if (positioningManager != null) {
-                // Cleanup
-                positioningManager.removeListener(
-                        positionListener);
-            }
-            map = null;
-            super.onDestroy();
+    @Override
+    public void onDestroy() {
+        if (positioningManager != null) {
+            // Cleanup
+            positioningManager.removeListener(
+                    positionListener);
         }
+        map = null;
+        super.onDestroy();
+    }
 
-        // Current location listener
-        public PositioningManager.OnPositionChangedListener positionListener = new
-                PositioningManager.OnPositionChangedListener() {
+    // Current location listener
+    public PositioningManager.OnPositionChangedListener positionListener = new
+            PositioningManager.OnPositionChangedListener() {
 
-                    public void onPositionUpdated(PositioningManager.LocationMethod method,
-                                                  GeoPosition position, boolean isMapMatched) {
-                        if (!appPaused) {
-                            map.setCenter(position.getCoordinate(),
-                                    Map.Animation.BOW);
-                        }
+                public void onPositionUpdated(PositioningManager.LocationMethod method,
+                                              GeoPosition position, boolean isMapMatched) {
+                    if (!appPaused) {
+                        map.setCenter(position.getCoordinate(),
+                                Map.Animation.BOW);
                     }
+                }
 
-                    public void onPositionFixChanged(PositioningManager.LocationMethod method,
-                                                     PositioningManager.LocationStatus status) {
-                        Timber.d("Position changed: " + status.name());
-                    }
-                };
+                public void onPositionFixChanged(PositioningManager.LocationMethod method,
+                                                 PositioningManager.LocationStatus status) {
+                    Timber.d("Position changed: " + status.name());
+                }
+            };
 
     private void initHereMaps() {
         final MapFragment mapFragment = (MapFragment)
@@ -216,7 +217,7 @@ public class HereMapsActivity extends AppCompatActivity {
                 .setNaturalGuidanceMode(EnumSet.of(NavigationManager.NaturalGuidanceMode.JUNCTION));
     }
 
-    public void getDirections() {
+    public void getDirections(GeoCoordinate endPoint) {
         // Clear previous results
         if (map != null && mapRoute != null) {
             map.removeMapObject(mapRoute);
@@ -239,7 +240,7 @@ public class HereMapsActivity extends AppCompatActivity {
             Timber.d("Startpoint set! LAT:" + positioningManager.getPosition().getCoordinate().getLatitude() + " LONG:" + positioningManager.getPosition().getCoordinate().getLongitude());
         }
         // END
-        GeoCoordinate endPoint = new GeoCoordinate(56.156491, 10.211105);
+//        GeoCoordinate endPoint = new GeoCoordinate(56.156491, 10.211105);
         routePlan.addWaypoint(new RouteWaypoint(endPoint));
 
         Image destinationMarkerImage = new Image();
@@ -268,7 +269,7 @@ public class HereMapsActivity extends AppCompatActivity {
                 // create a map route object and place it on the map
                 route = routeResult.get(0).getRoute();
                 mapRoute = new MapRoute(route);
-               // mapRoute.setColor(ROUTE_COLOR);
+                // mapRoute.setColor(ROUTE_COLOR);
 
                 map.addMapObject(mapRoute);
 
@@ -396,7 +397,8 @@ public class HereMapsActivity extends AppCompatActivity {
             public boolean onQueryTextSubmit(String query) {
                 getSearchSuggestions(query);
                 searchView.setQuery(searchView.getSuggestionAtPosition(0), false);
-                getDirections();
+                //getDirections();
+                // TODO also do request for geocoordinate.
                 return false;
             }
 
@@ -411,7 +413,13 @@ public class HereMapsActivity extends AppCompatActivity {
         searchView.setOnItemClickListener((parent, view, position, id) -> {
             String suggestion = searchView.getSuggestionAtPosition(position);
             searchView.setQuery(suggestion, true);
-            getDirections();
+
+            // Request the coordinates of the suggestion clicked on.
+            ResultListener<List<Location>> listener = new GeocodeListener();
+            GeocodeRequest request = new GeocodeRequest(suggestion).setSearchArea(positioningManager.getPosition().getCoordinate(), 5000);
+            if (request.execute(listener) != ErrorCode.NONE) {
+                Timber.d("Error getting geocoordinates of destination...");
+            }
         });
     }
 
@@ -524,7 +532,7 @@ public class HereMapsActivity extends AppCompatActivity {
             //showWaypointerObject();
 
             // Show next maneuver
-           // updateNextManeuverBillboard(maneuver);
+            // updateNextManeuverBillboard(maneuver);
         }
     };
 
@@ -560,5 +568,17 @@ public class HereMapsActivity extends AppCompatActivity {
         // Zoom in
         Route mainRoute = mapRoute.getRoute();
         map.zoomTo(mainRoute.getBoundingBox(), Map.Animation.BOW, Map.MOVE_PRESERVE_ORIENTATION);
+    }
+
+    // When searching for addresses
+    class GeocodeListener implements ResultListener<List<Location>> {
+        @Override
+        public void onCompleted(List<Location> data, ErrorCode error) {
+            if (error != ErrorCode.NONE) {
+                Timber.d("Error getting coordinates of address...");
+            } else {
+                getDirections(data.get(0).getCoordinate());
+            }
+        }
     }
 }
