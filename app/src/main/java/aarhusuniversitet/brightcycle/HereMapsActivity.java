@@ -72,7 +72,7 @@ public class HereMapsActivity extends AppCompatActivity {
     private CoreRouter coreRouter;
     private boolean appPaused;
     private Route route;
-    private static final int ROUTE_COLOR = R.color.fab_material_amber_500;
+    private static int ROUTE_COLOR;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,12 +88,8 @@ public class HereMapsActivity extends AppCompatActivity {
         initHereMaps();
         createSearchSuggestionsOnTextChange();
         initFabButton();
-    }
 
-    private void initFabButton() {
-        fabButton.setImageResource(R.drawable.ic_navigation);
-        fabButton.setButtonColor(getApplicationContext().getColor(R.color.fab_material_amber_500));
-        fabButton.setButtonColorPressed(getApplicationContext().getColor(R.color.fab_material_amber_900));
+        ROUTE_COLOR = getApplicationContext().getColor(R.color.fab_material_amber_500);
     }
 
     public void onResume() {
@@ -116,7 +112,7 @@ public class HereMapsActivity extends AppCompatActivity {
             }
 
             // Notify navigation listener to update the maneuver billboard and show waypointer
-            m_navigationNewInstructionListener.onNewInstructionEvent();
+            navigationNewInstructionListener.onNewInstructionEvent();
         }
     }
 
@@ -140,6 +136,8 @@ public class HereMapsActivity extends AppCompatActivity {
         map = null;
         super.onDestroy();
     }
+
+    // ------------- HERE Maps SDK -------------
 
     // Current location listener
     public PositioningManager.OnPositionChangedListener positionListener = new
@@ -171,13 +169,13 @@ public class HereMapsActivity extends AppCompatActivity {
 
                 // Set current location indicator
                 map.getPositionIndicator().setVisible(true);
+
                 // Set the map center to the Aarhus region
                 map.setCenter(new GeoCoordinate(56.14703396, 10.20783076),
                         Map.Animation.NONE);
 
                 // Set the zoom level to the average between min and max
-                map.setZoomLevel(
-                        (map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
+                map.setZoomLevel((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
 
                 // Set position manager to get current location.
                 positioningManager = PositioningManager.getInstance();
@@ -240,7 +238,6 @@ public class HereMapsActivity extends AppCompatActivity {
             Timber.d("Startpoint set! LAT:" + positioningManager.getPosition().getCoordinate().getLatitude() + " LONG:" + positioningManager.getPosition().getCoordinate().getLongitude());
         }
         // END
-//        GeoCoordinate endPoint = new GeoCoordinate(56.156491, 10.211105);
         routePlan.addWaypoint(new RouteWaypoint(endPoint));
 
         Image destinationMarkerImage = new Image();
@@ -251,8 +248,8 @@ public class HereMapsActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        map.setZoomLevel(
-                (map.getMaxZoomLevel() + map.getMinZoomLevel()) / 4);
+        map.setZoomLevel(((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 4 * 3));
+
         coreRouter.calculateRoute(routePlan, new RouteListener());
     }
 
@@ -269,7 +266,7 @@ public class HereMapsActivity extends AppCompatActivity {
                 // create a map route object and place it on the map
                 route = routeResult.get(0).getRoute();
                 mapRoute = new MapRoute(route);
-                // mapRoute.setColor(ROUTE_COLOR);
+                mapRoute.setColor(ROUTE_COLOR);
 
                 map.addMapObject(mapRoute);
 
@@ -281,6 +278,241 @@ public class HereMapsActivity extends AppCompatActivity {
                 Timber.d("Route calculation failed... " + error);
             }
         }
+    }
+
+    /**
+     * Attaches listeners to navigation manager.
+     */
+    private void attachNavigationListeners() {
+        if (navigationManager != null) {
+            navigationManager
+                    .addPositionListener(new WeakReference<NavigationManager.PositionListener>(
+                            navigationPositionListener));
+            navigationManager.addNewInstructionEventListener(
+                    new WeakReference<NavigationManager.NewInstructionEventListener>(
+                            navigationNewInstructionListener));
+            navigationManager.addNavigationManagerEventListener(
+                    new WeakReference<NavigationManager.NavigationManagerEventListener>(
+                            navigationListener));
+            navigationManager
+                    .addRerouteListener(new WeakReference<NavigationManager.RerouteListener>(
+                            navigationRerouteListener));
+        }
+    }
+
+    /**
+     * Detaches listeners from navigation manager.
+     */
+    private void detachNavigationListeners() {
+        if (navigationManager != null) {
+            navigationManager.removeRerouteListener(navigationRerouteListener);
+            navigationManager.removeNavigationManagerEventListener(navigationListener);
+            navigationManager
+                    .removeNewInstructionEventListener(navigationNewInstructionListener);
+            navigationManager.removePositionListener(navigationPositionListener);
+        }
+    }
+
+    // Called on UI thread
+    private final NavigationManager.NavigationManagerEventListener navigationListener = new NavigationManager.NavigationManagerEventListener() {
+        @Override
+        public void onEnded(final NavigationManager.NavigationMode mode) {
+            // NOTE: this method is called in both cases when destination is reached and when
+            // NavigationManager is stopped.
+            Toast.makeText(getApplicationContext(), "Destination reached!", Toast.LENGTH_LONG)
+                    .show();
+
+            // Revert to default behavior
+            navigationManager.setMapUpdateMode(NavigationManager.MapUpdateMode.NONE);
+            navigationManager.setTrafficAvoidanceMode(NavigationManager.TrafficAvoidanceMode.DISABLE);
+            navigationManager.setMap(null);
+        }
+
+        @Override
+        public void onRouteUpdated(final Route updatedRoute) {
+            // This does not happen on re-route
+            Toast.makeText(getApplicationContext(), "Your route was udated!", Toast.LENGTH_LONG)
+                    .show();
+
+            map.removeMapObject(mapRoute);
+            mapRoute = new MapRoute(updatedRoute);
+            showRoute();
+        }
+    };
+
+    // Route updated
+    private final NavigationManager.RerouteListener navigationRerouteListener = new NavigationManager.RerouteListener() {
+        @Override
+        public void onRerouteEnd(Route route) {
+            Toast.makeText(getApplicationContext(), "Your route was udated!", Toast.LENGTH_LONG)
+                    .show();
+
+            map.removeMapObject(mapRoute);
+            mapRoute = new MapRoute(route);
+            showRoute();
+        }
+    };
+
+    private final NavigationManager.PositionListener navigationPositionListener = new NavigationManager.PositionListener() {
+        @Override
+        public void onPositionUpdated(final GeoPosition position) {
+            if (navigationManager == null) {
+                return;
+            }
+
+            GeoCoordinate coordinate = position.getCoordinate();
+            if (coordinate == null || !coordinate.isValid()) {
+                return;
+            }
+
+            // Due to false Altitude from map data
+            coordinate.setAltitude(0);
+        }
+    };
+
+    // New maneuver
+    private final NavigationManager.NewInstructionEventListener navigationNewInstructionListener = new NavigationManager.NewInstructionEventListener() {
+        @Override
+        public void onNewInstructionEvent() {
+            Timber.d("onNewInstructionEvent");
+
+            final Maneuver maneuver = navigationManager.getNextManeuver();
+
+            if (maneuver == null) {
+                Timber.d("onNewInstructionEvent - invalid maneuver");
+            }
+
+            // Show next maneuver
+            // updateNextManeuverBillboard(maneuver);
+        }
+    };
+
+    /**
+     * Displays calculated route on the map and zooms-in to route's bounding box.
+     */
+    private void showRoute() {
+        if (mapRoute == null) {
+            Timber.d("Failed to show route.");
+            return;
+        }
+
+        mapRoute.setColor(ROUTE_COLOR);
+        map.addMapObject(mapRoute);
+
+        // Zoom in
+        Route mainRoute = mapRoute.getRoute();
+        map.zoomTo(mainRoute.getBoundingBox(), Map.Animation.BOW, Map.MOVE_PRESERVE_ORIENTATION);
+    }
+
+    // ------------- Searching, geocoding, reverse geocoding -------------
+
+    /**
+     * On searching for addresses (geocoding)
+     */
+    class GeocodeListener implements ResultListener<List<Location>> {
+        @Override
+        public void onCompleted(List<Location> data, ErrorCode error) {
+            if (error != ErrorCode.NONE) {
+                Timber.d("Error getting coordinates of address...");
+            } else {
+                if(data.size() > 0){
+                    Timber.d("Destination lat: " + String.valueOf(data.get(0).getCoordinate().getLatitude()) + " long: " + String.valueOf(data.get(0).getCoordinate().getLongitude()));
+                    getDirections(data.get(0).getCoordinate());
+                }
+                else{
+                    Timber.d("No results for addresses...");
+                    runOnUiThread(() -> {
+                        searchView.openSearch();
+                        Toast.makeText(getApplicationContext(), "No results, try again...", Toast.LENGTH_LONG)
+                                .show();
+                    });
+                }
+            }
+        }
+    }
+
+
+    class SuggestionQueryListener implements ResultListener<List<String>> {
+        @Override
+        public void onCompleted(List<String> data, ErrorCode error) {
+            if (error != ErrorCode.NONE) {
+                // Handle error
+                // ...
+            } else {
+                searchView.addSuggestions(data);
+            }
+        }
+    }
+
+    private void getSearchSuggestions(String term) {
+        try {
+            TextSuggestionRequest request = null;
+            request = new TextSuggestionRequest(term).setSearchCenter(map.getCenter());
+
+            if (request.execute(new SuggestionQueryListener()) !=
+                    ErrorCode.NONE) {
+                //Handle request error
+                //...
+            }
+        } catch (IllegalArgumentException ex) {
+            //Handle invalid create search request parameters
+        }
+    }
+
+    private void createSearchSuggestionsOnTextChange() {
+        searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                getSearchSuggestions(query);
+                searchView.setQuery(searchView.getSuggestionAtPosition(0), false);
+                //getDirections();
+                // TODO also do request for geocoordinate.
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                getSearchSuggestions(newText);
+                return false;
+            }
+        });
+
+        // Do something when the suggestion list is clicked.
+        searchView.setOnItemClickListener((parent, view, position, id) -> {
+            String suggestion = searchView.getSuggestionAtPosition(position);
+            searchView.setQuery(suggestion, true);
+
+            // Request the coordinates of the suggestion clicked on.
+            ResultListener<List<Location>> listener = new GeocodeListener();
+            GeocodeRequest request = new GeocodeRequest(suggestion).setSearchArea(positioningManager.getPosition().getCoordinate(), 5000);
+            if (request.execute(listener) != ErrorCode.NONE) {
+                Timber.d("Error getting geocoordinates of destination...");
+            }
+        });
+    }
+
+    // Result when using search by voice.
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == MaterialSearchView.REQUEST_VOICE && resultCode == RESULT_OK) {
+            ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            if (matches != null && matches.size() > 0) {
+                String searchWord = matches.get(0);
+                if (!TextUtils.isEmpty(searchWord)) {
+                    searchView.setQuery(searchWord, false);
+                    getSearchSuggestions(searchWord);
+                }
+            }
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    // ------------- Initialization of user interface -------------
+    private void initFabButton() {
+        fabButton.setImageResource(R.drawable.ic_navigation);
+        fabButton.setButtonColor(getApplicationContext().getColor(R.color.fab_material_amber_500));
+        fabButton.setButtonColorPressed(getApplicationContext().getColor(R.color.fab_material_amber_900));
     }
 
     private void createActionBar() {
@@ -364,221 +596,4 @@ public class HereMapsActivity extends AppCompatActivity {
         }
     }
 
-    class SuggestionQueryListener implements ResultListener<List<String>> {
-        @Override
-        public void onCompleted(List<String> data, ErrorCode error) {
-            if (error != ErrorCode.NONE) {
-                // Handle error
-                // ...
-            } else {
-                searchView.addSuggestions(data);
-            }
-        }
-    }
-
-    private void getSearchSuggestions(String term) {
-        try {
-            TextSuggestionRequest request = null;
-            request = new TextSuggestionRequest(term).setSearchCenter(map.getCenter());
-
-            if (request.execute(new SuggestionQueryListener()) !=
-                    ErrorCode.NONE) {
-                //Handle request error
-                //...
-            }
-        } catch (IllegalArgumentException ex) {
-            //Handle invalid create search request parameters
-        }
-    }
-
-    private void createSearchSuggestionsOnTextChange() {
-        searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                getSearchSuggestions(query);
-                searchView.setQuery(searchView.getSuggestionAtPosition(0), false);
-                //getDirections();
-                // TODO also do request for geocoordinate.
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                getSearchSuggestions(newText);
-                return false;
-            }
-        });
-
-        // Do something when the suggestion list is clicked.
-        searchView.setOnItemClickListener((parent, view, position, id) -> {
-            String suggestion = searchView.getSuggestionAtPosition(position);
-            searchView.setQuery(suggestion, true);
-
-            // Request the coordinates of the suggestion clicked on.
-            ResultListener<List<Location>> listener = new GeocodeListener();
-            GeocodeRequest request = new GeocodeRequest(suggestion).setSearchArea(positioningManager.getPosition().getCoordinate(), 5000);
-            if (request.execute(listener) != ErrorCode.NONE) {
-                Timber.d("Error getting geocoordinates of destination...");
-            }
-        });
-    }
-
-    /**
-     * Attaches listeners to navigation manager.
-     */
-    private void attachNavigationListeners() {
-        if (navigationManager != null) {
-            navigationManager
-                    .addPositionListener(new WeakReference<NavigationManager.PositionListener>(
-                            m_navigationPositionListener));
-            navigationManager.addNewInstructionEventListener(
-                    new WeakReference<NavigationManager.NewInstructionEventListener>(
-                            m_navigationNewInstructionListener));
-            navigationManager.addNavigationManagerEventListener(
-                    new WeakReference<NavigationManager.NavigationManagerEventListener>(
-                            m_navigationListener));
-            navigationManager
-                    .addRerouteListener(new WeakReference<NavigationManager.RerouteListener>(
-                            m_navigationRerouteListener));
-        }
-    }
-
-    /**
-     * Detaches listeners from navigation manager.
-     */
-    private void detachNavigationListeners() {
-        if (navigationManager != null) {
-            navigationManager.removeRerouteListener(m_navigationRerouteListener);
-            navigationManager.removeNavigationManagerEventListener(m_navigationListener);
-            navigationManager
-                    .removeNewInstructionEventListener(m_navigationNewInstructionListener);
-            navigationManager.removePositionListener(m_navigationPositionListener);
-        }
-    }
-
-    // Called on UI thread
-    private final NavigationManager.NavigationManagerEventListener m_navigationListener = new NavigationManager.NavigationManagerEventListener() {
-        @Override
-        public void onEnded(final NavigationManager.NavigationMode mode) {
-            // NOTE: this method is called in both cases when destination is reached and when
-            // NavigationManager is stopped.
-            Toast.makeText(getApplicationContext(), "Destination reached!", Toast.LENGTH_LONG)
-                    .show();
-
-            //hideWaypointerObject();
-
-            // Revert to default behavior
-            navigationManager.setMapUpdateMode(NavigationManager.MapUpdateMode.NONE);
-            navigationManager.setTrafficAvoidanceMode(NavigationManager.TrafficAvoidanceMode.DISABLE);
-            navigationManager.setMap(null);
-        }
-
-        @Override
-        public void onRouteUpdated(final Route updatedRoute) {
-            // This does not happen on re-route
-            Toast.makeText(getApplicationContext(), "Your route was udated!", Toast.LENGTH_LONG)
-                    .show();
-
-            map.removeMapObject(mapRoute);
-            mapRoute = new MapRoute(updatedRoute);
-            showLiveSightRoute();
-        }
-    };
-
-    // Route updated
-    private final NavigationManager.RerouteListener m_navigationRerouteListener = new NavigationManager.RerouteListener() {
-        @Override
-        public void onRerouteEnd(Route route) {
-            Toast.makeText(getApplicationContext(), "Your route was udated!", Toast.LENGTH_LONG)
-                    .show();
-
-            map.removeMapObject(mapRoute);
-            mapRoute = new MapRoute(route);
-            showLiveSightRoute();
-        }
-    };
-
-    // Called on UI thread
-    private final NavigationManager.PositionListener m_navigationPositionListener = new NavigationManager.PositionListener() {
-        @Override
-        public void onPositionUpdated(final GeoPosition loc) {
-            if (navigationManager == null) {
-                return;
-            }
-
-            GeoCoordinate coord = loc.getCoordinate();
-            if (coord == null || !coord.isValid()) {
-                return;
-            }
-
-            // Due to false Altitude from map data
-            coord.setAltitude(0);
-
-        }
-    };
-
-    // New maneuver
-    private final NavigationManager.NewInstructionEventListener m_navigationNewInstructionListener = new NavigationManager.NewInstructionEventListener() {
-        @Override
-        public void onNewInstructionEvent() {
-            Timber.d("onNewInstructionEvent");
-
-            final Maneuver maneuver = navigationManager.getNextManeuver();
-
-            if (maneuver == null) {
-                Timber.d("onNewInstructionEvent - invalid maneuver");
-            }
-
-            //showWaypointerObject();
-
-            // Show next maneuver
-            // updateNextManeuverBillboard(maneuver);
-        }
-    };
-
-    // Voice search
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == MaterialSearchView.REQUEST_VOICE && resultCode == RESULT_OK) {
-            ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-            if (matches != null && matches.size() > 0) {
-                String searchWord = matches.get(0);
-                if (!TextUtils.isEmpty(searchWord)) {
-                    searchView.setQuery(searchWord, false);
-                    getSearchSuggestions(searchWord);
-                }
-            }
-            return;
-        }
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    /**
-     * Displays calculated route on the map and zooms-in to route's bounding box.
-     */
-    private void showLiveSightRoute() {
-        if (mapRoute == null) {
-            Timber.d("Failed to show route.");
-            return;
-        }
-
-        mapRoute.setColor(ROUTE_COLOR);
-        map.addMapObject(mapRoute);
-
-        // Zoom in
-        Route mainRoute = mapRoute.getRoute();
-        map.zoomTo(mainRoute.getBoundingBox(), Map.Animation.BOW, Map.MOVE_PRESERVE_ORIENTATION);
-    }
-
-    // When searching for addresses
-    class GeocodeListener implements ResultListener<List<Location>> {
-        @Override
-        public void onCompleted(List<Location> data, ErrorCode error) {
-            if (error != ErrorCode.NONE) {
-                Timber.d("Error getting coordinates of address...");
-            } else {
-                getDirections(data.get(0).getCoordinate());
-            }
-        }
-    }
 }
