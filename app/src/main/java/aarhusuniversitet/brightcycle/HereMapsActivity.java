@@ -139,24 +139,6 @@ public class HereMapsActivity extends AppCompatActivity {
 
     // ------------- HERE Maps SDK -------------
 
-    // Current location listener
-    public PositioningManager.OnPositionChangedListener positionListener = new
-            PositioningManager.OnPositionChangedListener() {
-
-                public void onPositionUpdated(PositioningManager.LocationMethod method,
-                                              GeoPosition position, boolean isMapMatched) {
-                    if (!appPaused) {
-                        map.setCenter(position.getCoordinate(),
-                                Map.Animation.BOW);
-                    }
-                }
-
-                public void onPositionFixChanged(PositioningManager.LocationMethod method,
-                                                 PositioningManager.LocationStatus status) {
-                    Timber.d("Position changed: " + status.name());
-                }
-            };
-
     private void initHereMaps() {
         final MapFragment mapFragment = (MapFragment)
                 getFragmentManager().findFragmentById(R.id.mapfragment);
@@ -191,7 +173,6 @@ public class HereMapsActivity extends AppCompatActivity {
                 Timber.d("Initializing Here Maps Failed... " + error);
             }
         });
-
     }
 
     @OnClick(R.id.fabButton)
@@ -252,6 +233,24 @@ public class HereMapsActivity extends AppCompatActivity {
 
         coreRouter.calculateRoute(routePlan, new RouteListener());
     }
+
+    // Current location listener
+    public PositioningManager.OnPositionChangedListener positionListener = new
+            PositioningManager.OnPositionChangedListener() {
+
+                public void onPositionUpdated(PositioningManager.LocationMethod method,
+                                              GeoPosition position, boolean isMapMatched) {
+                    if (!appPaused) {
+                        map.setCenter(position.getCoordinate(),
+                                Map.Animation.BOW);
+                    }
+                }
+
+                public void onPositionFixChanged(PositioningManager.LocationMethod method,
+                                                 PositioningManager.LocationStatus status) {
+                    Timber.d("Position changed: " + status.name());
+                }
+            };
 
     private class RouteListener implements CoreRouter.Listener {
 
@@ -415,11 +414,10 @@ public class HereMapsActivity extends AppCompatActivity {
             if (error != ErrorCode.NONE) {
                 Timber.d("Error getting coordinates of address...");
             } else {
-                if(data.size() > 0){
+                if (data.size() > 0) {
                     Timber.d("Destination lat: " + String.valueOf(data.get(0).getCoordinate().getLatitude()) + " long: " + String.valueOf(data.get(0).getCoordinate().getLongitude()));
                     getDirections(data.get(0).getCoordinate());
-                }
-                else{
+                } else {
                     Timber.d("No results for addresses...");
                     runOnUiThread(() -> {
                         searchView.openSearch();
