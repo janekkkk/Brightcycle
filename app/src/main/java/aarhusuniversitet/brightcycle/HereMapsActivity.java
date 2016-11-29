@@ -65,14 +65,13 @@ public class HereMapsActivity extends AppCompatActivity {
     ActionButton fabButton;
 
     private Map map = null;
-    private MapFragment mapFragment = null;
     private MapRoute mapRoute = null;
     private PositioningManager positioningManager;
     private NavigationManager navigationManager;
     private CoreRouter coreRouter;
     private boolean appPaused;
     private Route route;
-    private static final int ROUTE_COLOR = android.graphics.Color.BLUE;
+    private static final int ROUTE_COLOR = R.color.fab_material_amber_500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,8 +91,8 @@ public class HereMapsActivity extends AppCompatActivity {
 
     private void initFabButton() {
         fabButton.setImageResource(R.drawable.ic_navigation);
-        fabButton.setButtonColor(getResources().getColor(R.color.fab_material_amber_500));
-        fabButton.setButtonColorPressed(getResources().getColor(R.color.fab_material_amber_900));
+        fabButton.setButtonColor(getApplicationContext().getColor(R.color.fab_material_amber_500));
+        fabButton.setButtonColorPressed(getApplicationContext().getColor(R.color.fab_material_amber_900));
     }
 
     public void onResume() {
@@ -125,6 +124,7 @@ public class HereMapsActivity extends AppCompatActivity {
             if (positioningManager != null) {
                 positioningManager.stop();
             }
+            detachNavigationListeners();
             super.onPause();
             appPaused = true;
         }
@@ -170,7 +170,6 @@ public class HereMapsActivity extends AppCompatActivity {
 
                 // Set current location indicator
                 map.getPositionIndicator().setVisible(true);
-
                 // Set the map center to the Aarhus region
                 map.setCenter(new GeoCoordinate(56.14703396, 10.20783076),
                         Map.Animation.NONE);
@@ -269,6 +268,8 @@ public class HereMapsActivity extends AppCompatActivity {
                 // create a map route object and place it on the map
                 route = routeResult.get(0).getRoute();
                 mapRoute = new MapRoute(route);
+               // mapRoute.setColor(ROUTE_COLOR);
+
                 map.addMapObject(mapRoute);
 
                 // Get the bounding box containing the route and zoom in
@@ -407,13 +408,10 @@ public class HereMapsActivity extends AppCompatActivity {
         });
 
         // Do something when the suggestion list is clicked.
-        searchView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String suggestion = searchView.getSuggestionAtPosition(position);
-                searchView.setQuery(suggestion, true);
-                getDirections();
-            }
+        searchView.setOnItemClickListener((parent, view, position, id) -> {
+            String suggestion = searchView.getSuggestionAtPosition(position);
+            searchView.setQuery(suggestion, true);
+            getDirections();
         });
     }
 
@@ -479,7 +477,7 @@ public class HereMapsActivity extends AppCompatActivity {
         }
     };
 
-    // Called on UI thread
+    // Route updated
     private final NavigationManager.RerouteListener m_navigationRerouteListener = new NavigationManager.RerouteListener() {
         @Override
         public void onRerouteEnd(Route route) {
@@ -511,16 +509,16 @@ public class HereMapsActivity extends AppCompatActivity {
         }
     };
 
-    // Called on UI thread
+    // New maneuver
     private final NavigationManager.NewInstructionEventListener m_navigationNewInstructionListener = new NavigationManager.NewInstructionEventListener() {
         @Override
         public void onNewInstructionEvent() {
             Timber.d("onNewInstructionEvent");
 
             final Maneuver maneuver = navigationManager.getNextManeuver();
+
             if (maneuver == null) {
                 Timber.d("onNewInstructionEvent - invalid maneuver");
-                return;
             }
 
             //showWaypointerObject();
