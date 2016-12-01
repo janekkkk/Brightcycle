@@ -1,10 +1,7 @@
 package aarhusuniversitet.brightcycle.Utility;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
-
-import aarhusuniversitet.brightcycle.MapsActivity;
 
 /**
  * Created by janek on 17/11/2016.
