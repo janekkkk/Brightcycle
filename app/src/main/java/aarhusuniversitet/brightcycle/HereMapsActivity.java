@@ -224,9 +224,6 @@ public class HereMapsActivity extends AppCompatActivity {
         // END
         routePlan.addWaypoint(new RouteWaypoint(endPoint));
 
-        // TODO ZOOM
-        //map.setZoomLevel(((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 4 * 3));
-
         // Start calculating the route from your current location to the destination.
         coreRouter.calculateRoute(routePlan, new RouteListener());
     }
@@ -257,6 +254,7 @@ public class HereMapsActivity extends AppCompatActivity {
 
         @Override
         public void onCalculateRouteFinished(List<RouteResult> routeResult, RoutingError error) {
+
             // If the route was calculated successfully
             if (error == RoutingError.NONE && routeResult.get(0).getRoute() != null) {
                 // create a map route object and place it on the map
@@ -267,46 +265,13 @@ public class HereMapsActivity extends AppCompatActivity {
                 map.addMapObject(mapRoute);
 
                 // Get the bounding box containing the route and zoom in
-                GeoBoundingBox gbb = route.getBoundingBox();
-                map.zoomTo(gbb, Map.Animation.BOW,
+                GeoBoundingBox boundingBox = route.getBoundingBox();
+                map.zoomTo(boundingBox, Map.Animation.BOW,
                         Map.MOVE_PRESERVE_ORIENTATION);
                 fabButton.setVisibility(View.VISIBLE);
             } else {
                 Timber.d("Route calculation failed... " + error);
             }
-        }
-    }
-
-    /**
-     * Attaches listeners to navigation manager.
-     */
-    private void attachNavigationListeners() {
-        if (navigationManager != null) {
-            navigationManager
-                    .addPositionListener(new WeakReference<NavigationManager.PositionListener>(
-                            navigationPositionListener));
-            navigationManager.addNewInstructionEventListener(
-                    new WeakReference<NavigationManager.NewInstructionEventListener>(
-                            navigationNewInstructionListener));
-            navigationManager.addNavigationManagerEventListener(
-                    new WeakReference<NavigationManager.NavigationManagerEventListener>(
-                            navigationListener));
-            navigationManager
-                    .addRerouteListener(new WeakReference<NavigationManager.RerouteListener>(
-                            navigationRerouteListener));
-        }
-    }
-
-    /**
-     * Detaches listeners from navigation manager.
-     */
-    private void detachNavigationListeners() {
-        if (navigationManager != null) {
-            navigationManager.removeRerouteListener(navigationRerouteListener);
-            navigationManager.removeNavigationManagerEventListener(navigationListener);
-            navigationManager
-                    .removeNewInstructionEventListener(navigationNewInstructionListener);
-            navigationManager.removePositionListener(navigationPositionListener);
         }
     }
 
@@ -398,6 +363,39 @@ public class HereMapsActivity extends AppCompatActivity {
         // Zoom in
         Route mainRoute = mapRoute.getRoute();
         map.zoomTo(mainRoute.getBoundingBox(), Map.Animation.BOW, Map.MOVE_PRESERVE_ORIENTATION);
+    }
+
+    /**
+     * Attaches listeners to navigation manager.
+     */
+    private void attachNavigationListeners() {
+        if (navigationManager != null) {
+            navigationManager
+                    .addPositionListener(new WeakReference<NavigationManager.PositionListener>(
+                            navigationPositionListener));
+            navigationManager.addNewInstructionEventListener(
+                    new WeakReference<NavigationManager.NewInstructionEventListener>(
+                            navigationNewInstructionListener));
+            navigationManager.addNavigationManagerEventListener(
+                    new WeakReference<NavigationManager.NavigationManagerEventListener>(
+                            navigationListener));
+            navigationManager
+                    .addRerouteListener(new WeakReference<NavigationManager.RerouteListener>(
+                            navigationRerouteListener));
+        }
+    }
+
+    /**
+     * Detaches listeners from navigation manager.
+     */
+    private void detachNavigationListeners() {
+        if (navigationManager != null) {
+            navigationManager.removeRerouteListener(navigationRerouteListener);
+            navigationManager.removeNavigationManagerEventListener(navigationListener);
+            navigationManager
+                    .removeNewInstructionEventListener(navigationNewInstructionListener);
+            navigationManager.removePositionListener(navigationPositionListener);
+        }
     }
 
     // ------------- Searching, geocoding, reverse geocoding -------------
