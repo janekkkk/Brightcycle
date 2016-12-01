@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.here.android.mpa.common.GeoCoordinate;
 
 public class Emergency {
 
@@ -22,10 +23,10 @@ public class Emergency {
         }
     }
 
-    public static void makeEmergencySMS(Activity activity, LatLng latLng) {
+    public static void makeEmergencySMS(Activity activity, GeoCoordinate latLng) {
         String message = "SOS I have an emergency! Please call me ASAP!";
         if (latLng != null) {
-            message = "SOS I have an emergency at: " + latLng.latitude + ", " + latLng.longitude;
+            message = "SOS I have an emergency at: " + latLng.getLatitude() + ", " + latLng.getLongitude();
         }
 
         Uri smsUri = Uri.parse("tel:112");
