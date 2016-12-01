@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.here.android.mpa.common.GeoBoundingBox;
 import com.here.android.mpa.common.GeoCoordinate;
 import com.here.android.mpa.common.GeoPosition;
@@ -183,9 +184,11 @@ public class HereMapsActivity extends AppCompatActivity {
             navigationManager.setMapUpdateMode(NavigationManager.MapUpdateMode.ROADVIEW);
 
             NavigationManager.Error error = navigationManager.startNavigation(route);
-            Timber.d("Navigation started!");
 
-            if (error != NavigationManager.Error.NONE) {
+            if (error == NavigationManager.Error.NONE) {
+                fabButton.setVisibility(View.INVISIBLE);
+                Timber.d("Navigation started!");
+            } else {
                 Timber.d("Navigation starting error: " + error);
                 navigationManager.setMap(null);
             }
@@ -221,16 +224,10 @@ public class HereMapsActivity extends AppCompatActivity {
         // END
         routePlan.addWaypoint(new RouteWaypoint(endPoint));
 
-        Image destinationMarkerImage = new Image();
-        try {
-            destinationMarkerImage.setImageResource(R.drawable.ic_action_location);
-            map.addMapObject(new MapMarker(endPoint, destinationMarkerImage));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // TODO ZOOM
+        //map.setZoomLevel(((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 4 * 3));
 
-        map.setZoomLevel(((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 4 * 3));
-
+        // Start calculating the route from your current location to the destination.
         coreRouter.calculateRoute(routePlan, new RouteListener());
     }
 
@@ -273,6 +270,7 @@ public class HereMapsActivity extends AppCompatActivity {
                 GeoBoundingBox gbb = route.getBoundingBox();
                 map.zoomTo(gbb, Map.Animation.BOW,
                         Map.MOVE_PRESERVE_ORIENTATION);
+                fabButton.setVisibility(View.VISIBLE);
             } else {
                 Timber.d("Route calculation failed... " + error);
             }
@@ -312,7 +310,6 @@ public class HereMapsActivity extends AppCompatActivity {
         }
     }
 
-    // Called on UI thread
     private final NavigationManager.NavigationManagerEventListener navigationListener = new NavigationManager.NavigationManagerEventListener() {
         @Override
         public void onEnded(final NavigationManager.NavigationMode mode) {
@@ -429,13 +426,11 @@ public class HereMapsActivity extends AppCompatActivity {
         }
     }
 
-
     class SuggestionQueryListener implements ResultListener<List<String>> {
         @Override
         public void onCompleted(List<String> data, ErrorCode error) {
             if (error != ErrorCode.NONE) {
-                // Handle error
-                // ...
+                // TODO Handle error
             } else {
                 searchView.addSuggestions(data);
             }
@@ -449,25 +444,27 @@ public class HereMapsActivity extends AppCompatActivity {
 
             if (request.execute(new SuggestionQueryListener()) !=
                     ErrorCode.NONE) {
-                //Handle request error
-                //...
+                // TODO Handle request error
             }
         } catch (IllegalArgumentException ex) {
-            //Handle invalid create search request parameters
+            // TODO Handle invalid create search request parameters
         }
     }
 
     private void createSearchSuggestionsOnTextChange() {
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+
+            // When the search form is submitted.
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                getSearchSuggestions(query);
-                searchView.setQuery(searchView.getSuggestionAtPosition(0), false);
-                //getDirections();
-                // TODO also do request for geocoordinate.
+            public boolean onQueryTextSubmit(String input) {
+                getSearchSuggestions(input);
+                String suggestion = searchView.getSuggestionAtPosition(0);
+                searchView.setQuery(suggestion, false);
+                getCoordinates(suggestion);
                 return false;
             }
 
+            // When the text in the search form is updated.
             @Override
             public boolean onQueryTextChange(String newText) {
                 getSearchSuggestions(newText);
@@ -481,12 +478,17 @@ public class HereMapsActivity extends AppCompatActivity {
             searchView.setQuery(suggestion, true);
 
             // Request the coordinates of the suggestion clicked on.
-            ResultListener<List<Location>> listener = new GeocodeListener();
-            GeocodeRequest request = new GeocodeRequest(suggestion).setSearchArea(positioningManager.getPosition().getCoordinate(), 5000);
-            if (request.execute(listener) != ErrorCode.NONE) {
-                Timber.d("Error getting geocoordinates of destination...");
-            }
+            getCoordinates(suggestion);
         });
+    }
+
+    private void getCoordinates(String address) {
+        ResultListener<List<Location>> listener = new GeocodeListener();
+        GeocodeRequest request = new GeocodeRequest(address).setSearchArea(positioningManager.getPosition().getCoordinate(), 5000);
+
+        if (request.execute(listener) != ErrorCode.NONE) {
+            Timber.d("Error getting geocoordinates of destination...");
+        }
     }
 
     // Result when using search by voice.
@@ -495,10 +497,10 @@ public class HereMapsActivity extends AppCompatActivity {
         if (requestCode == MaterialSearchView.REQUEST_VOICE && resultCode == RESULT_OK) {
             ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
             if (matches != null && matches.size() > 0) {
-                String searchWord = matches.get(0);
-                if (!TextUtils.isEmpty(searchWord)) {
-                    searchView.setQuery(searchWord, false);
-                    getSearchSuggestions(searchWord);
+                String input = matches.get(0);
+                if (!TextUtils.isEmpty(input)) {
+                    searchView.setQuery(input, false);
+                    getSearchSuggestions(input);
                 }
             }
             return;
@@ -520,7 +522,7 @@ public class HereMapsActivity extends AppCompatActivity {
     }
 
     public void createAppDrawer() {
-        Drawer result = new DrawerBuilder()
+        Drawer drawer = new DrawerBuilder()
                 .withActivity(this)
                 .withToolbar(toolbar)
                 .addDrawerItems(
@@ -540,7 +542,7 @@ public class HereMapsActivity extends AppCompatActivity {
                             Emergency.makeEmergencyCall(this);
                             break;
                         case 1:
-                            // Emergency.makeEmergencySMS(this, currentLocation);
+                            Emergency.makeEmergencySMS(this, new LatLng(positioningManager.getPosition().getCoordinate().getLatitude(), positioningManager.getPosition().getCoordinate().getLongitude()));
                             break;
                         case 2:
 
@@ -551,16 +553,16 @@ public class HereMapsActivity extends AppCompatActivity {
                 .withSelectedItem(-1)
                 .build();
 
-        result.updateIcon(1, new ImageHolder(R.drawable.ic_dialer_sip));
-        result.updateIcon(2, new ImageHolder(R.drawable.ic_message));
-        result.updateIcon(3, new ImageHolder(R.drawable.ic_settings));
-        result.updateIcon(4, new ImageHolder(R.drawable.ic_directions_bike));
+        drawer.updateIcon(1, new ImageHolder(R.drawable.ic_dialer_sip));
+        drawer.updateIcon(2, new ImageHolder(R.drawable.ic_message));
+        drawer.updateIcon(3, new ImageHolder(R.drawable.ic_settings));
+        drawer.updateIcon(4, new ImageHolder(R.drawable.ic_directions_bike));
 
-        result.addItem(new SecondaryDrawerItem().withIdentifier(6).withName("Heibersgade 12, Aarhus"));
-        result.addItem(new SecondaryDrawerItem().withIdentifier(7).withName("Norregade 8, Aarhus"));
+        drawer.addItem(new SecondaryDrawerItem().withIdentifier(6).withName("Heibersgade 12, Aarhus"));
+        drawer.addItem(new SecondaryDrawerItem().withIdentifier(7).withName("Norregade 8, Aarhus"));
 
-        result.updateIcon(6, new ImageHolder(R.drawable.ic_directions));
-        result.updateIcon(7, new ImageHolder(R.drawable.ic_directions));
+        drawer.updateIcon(6, new ImageHolder(R.drawable.ic_directions));
+        drawer.updateIcon(7, new ImageHolder(R.drawable.ic_directions));
     }
 
     @Override
