@@ -16,13 +16,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.here.android.mpa.common.GeoBoundingBox;
 import com.here.android.mpa.common.GeoCoordinate;
 import com.here.android.mpa.common.GeoPosition;
-import com.here.android.mpa.common.Image;
 import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.common.PositioningManager;
 import com.here.android.mpa.guidance.NavigationManager;
 import com.here.android.mpa.mapping.Map;
 import com.here.android.mpa.mapping.MapFragment;
-import com.here.android.mpa.mapping.MapMarker;
 import com.here.android.mpa.mapping.MapRoute;
 import com.here.android.mpa.routing.CoreRouter;
 import com.here.android.mpa.routing.Maneuver;
@@ -45,7 +43,6 @@ import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.scalified.fab.ActionButton;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -543,7 +540,8 @@ public class HereMapsActivity extends AppCompatActivity {
                             Emergency.makeEmergencySMS(this, new LatLng(positioningManager.getPosition().getCoordinate().getLatitude(), positioningManager.getPosition().getCoordinate().getLongitude()));
                             break;
                         case 2:
-
+                            Intent intent = new Intent(this, SettingsActivity.class);
+                            startActivity(intent);
                             break;
                     }
                     return false;
