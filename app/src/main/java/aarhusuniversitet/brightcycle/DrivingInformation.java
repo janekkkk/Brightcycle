@@ -44,6 +44,27 @@ public class DrivingInformation {
         }
     }
 
+    public void turnOffLights() {
+        for (Light light :
+                lights) {
+            light.turnOff();
+        }
+    }
+
+    public void turnOnLights() {
+        for (Light light :
+                lights) {
+            light.turnOn();
+        }
+    }
+
+    public void setBrightnessLights(int brightness){
+        for (Light light :
+                lights) {
+            light.setBrightness(brightness);
+        }
+    }
+
     private void initialize() {
         initializeLocations();
         initializeSensors();
@@ -72,5 +93,4 @@ public class DrivingInformation {
         lights.add(rightBlinker);
         lights.add(backLight);
     }
-
 }
