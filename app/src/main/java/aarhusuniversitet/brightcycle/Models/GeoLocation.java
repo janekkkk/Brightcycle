@@ -6,7 +6,7 @@ public class GeoLocation {
     private String address;
     private double longitude, latitude;
 
-    public GeoLocation(double longitude, double latitude) {
+    public GeoLocation(double latitude, double longitude) {
         this.longitude = longitude;
         this.latitude = latitude;
     }

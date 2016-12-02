@@ -58,7 +58,7 @@ public class DrivingInformation {
         }
     }
 
-    public void setBrightnessLights(int brightness){
+    public void setBrightnessLights(int brightness) {
         for (Light light :
                 lights) {
             light.setBrightness(brightness);
@@ -73,7 +73,7 @@ public class DrivingInformation {
 
     private void initializeLocations() {
         savedLocations = new ArrayList<>();
-        GeoCoordinate mockLocation = new GeoCoordinate(56.16294, 10.20392);
+        GeoCoordinate mockLocation = new GeoCoordinate(56.14703396, 10.20783076);
         savedBikeLocation = new GeoLocation();
         currentLocation = new GeoLocation(mockLocation.getLatitude(), mockLocation.getLongitude());
     }

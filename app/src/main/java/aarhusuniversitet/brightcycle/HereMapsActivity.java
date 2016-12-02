@@ -151,7 +151,7 @@ public class HereMapsActivity extends AppCompatActivity {
                 map.getPositionIndicator().setVisible(true);
 
                 // Set the map center to the Aarhus region
-                map.setCenter(new GeoCoordinate(56.14703396, 10.20783076),
+                map.setCenter(drivingInformation.currentLocation.getCoordinate(),
                         Map.Animation.NONE);
 
                 // Set the zoom level to the average between min and max
@@ -236,7 +236,7 @@ public class HereMapsActivity extends AppCompatActivity {
                 public void onPositionFixChanged(PositioningManager.LocationMethod method,
                                                  PositioningManager.LocationStatus status) {
                     if (status == PositioningManager.LocationStatus.AVAILABLE) {
-                        Timber.d("Curren location available!");
+                        Timber.d("Current location available!");
                         drivingInformation.currentLocation.setCoordinate(positioningManager.getPosition().getCoordinate());
                         map.setCenter(drivingInformation.currentLocation.getCoordinate(), Map.Animation.BOW);
                     }
