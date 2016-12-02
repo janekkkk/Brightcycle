@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.here.android.mpa.common.GeoBoundingBox;
 import com.here.android.mpa.common.GeoCoordinate;
 import com.here.android.mpa.common.GeoPosition;
@@ -48,6 +47,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import aarhusuniversitet.brightcycle.Models.Emergency;
 import br.com.mauker.materialsearchview.MaterialSearchView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -70,7 +70,9 @@ public class HereMapsActivity extends AppCompatActivity {
     private CoreRouter coreRouter;
     private boolean appPaused;
     private Route route;
-    private static int ROUTE_COLOR;
+    private static int routeColor;
+
+    private DrivingInformation drivingInformation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,15 +89,15 @@ public class HereMapsActivity extends AppCompatActivity {
         createSearchSuggestionsOnTextChange();
         initFabButton();
 
-        ROUTE_COLOR = getApplicationContext().getColor(R.color.fab_material_amber_500);
+        drivingInformation = DrivingInformation.getInstance(this, BluetoothConnection.getInstance(this));
+        routeColor = getApplicationContext().getColor(R.color.fab_material_amber_500);
     }
 
     public void onResume() {
         super.onResume();
         appPaused = false;
         if (positioningManager != null) {
-            positioningManager.start(
-                    PositioningManager.LocationMethod.GPS_NETWORK);
+            positioningManager.start(PositioningManager.LocationMethod.GPS_NETWORK);
         }
         if (navigationManager != null && navigationManager
                 .getRunningState() == NavigationManager.NavigationState.PAUSED) {
@@ -127,15 +129,13 @@ public class HereMapsActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         if (positioningManager != null) {
-            // Cleanup
-            positioningManager.removeListener(
-                    positionListener);
+            positioningManager.removeListener(positionListener);
         }
         map = null;
         super.onDestroy();
     }
 
-    // ------------- HERE Maps SDK -------------
+    // ------------- Navigation and routing -------------
 
     private void initHereMaps() {
         final MapFragment mapFragment = (MapFragment)
@@ -159,14 +159,15 @@ public class HereMapsActivity extends AppCompatActivity {
 
                 // Set position manager to get current location.
                 positioningManager = PositioningManager.getInstance();
-                if (positioningManager != null) {
-                    positioningManager.start(
-                            PositioningManager.LocationMethod.GPS_NETWORK);
-                }
 
                 positioningManager.addListener(
                         new WeakReference<PositioningManager.OnPositionChangedListener>(positionListener));
 
+                if (positioningManager.start(PositioningManager.LocationMethod.GPS_NETWORK)) {
+                    // Position updates started successfully.
+                    Timber.d("Current location getting started.");
+                }
+                Timber.d("Initialized Here maps");
             } else {
                 Timber.d("Initializing Here Maps Failed... " + error);
             }
@@ -205,20 +206,16 @@ public class HereMapsActivity extends AppCompatActivity {
 
         // Select routing options via RoutingMode
         RoutePlan routePlan = new RoutePlan();
-
         RouteOptions routeOptions = new RouteOptions();
-        routeOptions.setTransportMode(RouteOptions.TransportMode.PEDESTRIAN);
+        routeOptions.setTransportMode(RouteOptions.TransportMode.BICYCLE);
         routeOptions.setRouteType(RouteOptions.Type.FASTEST);
         routePlan.setRouteOptions(routeOptions);
 
         // Select Waypoints for your routes
-        // START
-        if (positioningManager != null) {
-            GeoCoordinate startPoint = positioningManager.getPosition().getCoordinate();
-            routePlan.addWaypoint(new RouteWaypoint(startPoint));
-            Timber.d("Startpoint set! LAT:" + positioningManager.getPosition().getCoordinate().getLatitude() + " LONG:" + positioningManager.getPosition().getCoordinate().getLongitude());
-        }
-        // END
+        // Start
+        routePlan.addWaypoint(new RouteWaypoint(drivingInformation.currentLocation.getCoordinate()));
+
+        // Destination
         routePlan.addWaypoint(new RouteWaypoint(endPoint));
 
         // Start calculating the route from your current location to the destination.
@@ -232,14 +229,17 @@ public class HereMapsActivity extends AppCompatActivity {
                 public void onPositionUpdated(PositioningManager.LocationMethod method,
                                               GeoPosition position, boolean isMapMatched) {
                     if (!appPaused) {
-                        map.setCenter(position.getCoordinate(),
-                                Map.Animation.BOW);
+                        drivingInformation.currentLocation.setCoordinate(position.getCoordinate());
                     }
                 }
 
                 public void onPositionFixChanged(PositioningManager.LocationMethod method,
                                                  PositioningManager.LocationStatus status) {
-                    Timber.d("Position changed: " + status.name());
+                    if (status == PositioningManager.LocationStatus.AVAILABLE) {
+                        Timber.d("Curren location available!");
+                        drivingInformation.currentLocation.setCoordinate(positioningManager.getPosition().getCoordinate());
+                        map.setCenter(drivingInformation.currentLocation.getCoordinate(), Map.Animation.BOW);
+                    }
                 }
             };
 
@@ -257,7 +257,7 @@ public class HereMapsActivity extends AppCompatActivity {
                 // create a map route object and place it on the map
                 route = routeResult.get(0).getRoute();
                 mapRoute = new MapRoute(route);
-                mapRoute.setColor(ROUTE_COLOR);
+                mapRoute.setColor(routeColor);
 
                 map.addMapObject(mapRoute);
 
@@ -341,7 +341,7 @@ public class HereMapsActivity extends AppCompatActivity {
             }
 
             // Show next maneuver
-            // updateNextManeuverBillboard(maneuver);
+            // TODO updateNextManeuverBillboard(maneuver);
         }
     };
 
@@ -354,7 +354,7 @@ public class HereMapsActivity extends AppCompatActivity {
             return;
         }
 
-        mapRoute.setColor(ROUTE_COLOR);
+        mapRoute.setColor(routeColor);
         map.addMapObject(mapRoute);
 
         // Zoom in
@@ -456,6 +456,8 @@ public class HereMapsActivity extends AppCompatActivity {
                 String suggestion = searchView.getSuggestionAtPosition(0);
                 searchView.setQuery(suggestion, false);
                 getCoordinates(suggestion);
+                searchView.closeSearch();
+                Timber.d("Submitted " + suggestion);
                 return false;
             }
 
@@ -470,16 +472,18 @@ public class HereMapsActivity extends AppCompatActivity {
         // Do something when the suggestion list is clicked.
         searchView.setOnItemClickListener((parent, view, position, id) -> {
             String suggestion = searchView.getSuggestionAtPosition(position);
-            searchView.setQuery(suggestion, true);
-
+            searchView.setQuery(suggestion, false);
+            searchView.closeSearch();
             // Request the coordinates of the suggestion clicked on.
             getCoordinates(suggestion);
+
+            Timber.d("Clicked " + suggestion);
         });
     }
 
     private void getCoordinates(String address) {
         ResultListener<List<Location>> listener = new GeocodeListener();
-        GeocodeRequest request = new GeocodeRequest(address).setSearchArea(positioningManager.getPosition().getCoordinate(), 5000);
+        GeocodeRequest request = new GeocodeRequest(address).setSearchArea(drivingInformation.currentLocation.getCoordinate(), 5000);
 
         if (request.execute(listener) != ErrorCode.NONE) {
             Timber.d("Error getting geocoordinates of destination...");
@@ -537,7 +541,7 @@ public class HereMapsActivity extends AppCompatActivity {
                             Emergency.makeEmergencyCall(this);
                             break;
                         case 1:
-                            Emergency.makeEmergencySMS(this, new LatLng(positioningManager.getPosition().getCoordinate().getLatitude(), positioningManager.getPosition().getCoordinate().getLongitude()));
+                            Emergency.makeEmergencySMS(this, drivingInformation.currentLocation.getCoordinate());
                             break;
                         case 2:
                             Intent intent = new Intent(this, SettingsActivity.class);
