@@ -151,7 +151,7 @@ public class HereMapsActivity extends AppCompatActivity {
                 map.getPositionIndicator().setVisible(true);
 
                 // Set the map center to the Aarhus region
-                map.setCenter(drivingInformation.currentLocation.getCoordinate(),
+                map.setCenter(drivingInformation.mockLocation,
                         Map.Animation.NONE);
 
                 // Set the zoom level to the average between min and max
@@ -207,7 +207,7 @@ public class HereMapsActivity extends AppCompatActivity {
         // Select routing options via RoutingMode
         RoutePlan routePlan = new RoutePlan();
         RouteOptions routeOptions = new RouteOptions();
-        routeOptions.setTransportMode(RouteOptions.TransportMode.BICYCLE);
+        routeOptions.setTransportMode(RouteOptions.TransportMode.CAR);
         routeOptions.setRouteType(RouteOptions.Type.FASTEST);
         routePlan.setRouteOptions(routeOptions);
 
@@ -302,7 +302,7 @@ public class HereMapsActivity extends AppCompatActivity {
     private final NavigationManager.RerouteListener navigationRerouteListener = new NavigationManager.RerouteListener() {
         @Override
         public void onRerouteEnd(Route route) {
-            Toast.makeText(getApplicationContext(), "Your route was udated!", Toast.LENGTH_LONG)
+            Toast.makeText(getApplicationContext(), "Your route was updated!", Toast.LENGTH_LONG)
                     .show();
 
             map.removeMapObject(mapRoute);

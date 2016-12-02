@@ -23,6 +23,7 @@ public class DrivingInformation {
     public GeoLocation currentLocation;
     public GeoLocation savedBikeLocation;
     public ArrayList<GeoLocation> savedLocations;
+    public GeoCoordinate mockLocation;
 
     protected Activity activity;
     public ArrayList<Light> lights;
@@ -73,9 +74,9 @@ public class DrivingInformation {
 
     private void initializeLocations() {
         savedLocations = new ArrayList<>();
-        GeoCoordinate mockLocation = new GeoCoordinate(56.14703396, 10.20783076);
+        mockLocation = new GeoCoordinate(56.14703396, 10.20783076);
         savedBikeLocation = new GeoLocation();
-        currentLocation = new GeoLocation(mockLocation.getLatitude(), mockLocation.getLongitude());
+        currentLocation = new GeoLocation(mockLocation);
     }
 
     private void initializeSensors() {

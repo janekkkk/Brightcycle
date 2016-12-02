@@ -10,8 +10,14 @@ public class GeoLocation {
         this.longitude = longitude;
         this.latitude = latitude;
     }
-    public GeoLocation(){
 
+    public GeoLocation() {
+
+    }
+
+    public GeoLocation(GeoCoordinate geoCoordinate) {
+        this.latitude = geoCoordinate.getLatitude();
+        this.longitude = geoCoordinate.getLongitude();
     }
 
     public GeoCoordinate getCoordinate() {
