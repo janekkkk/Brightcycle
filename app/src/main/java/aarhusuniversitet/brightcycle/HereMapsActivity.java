@@ -205,16 +205,12 @@ public class HereMapsActivity extends AppCompatActivity {
         // Select routing options via RoutingMode
         RoutePlan routePlan = new RoutePlan();
         RouteOptions routeOptions = new RouteOptions();
-        routeOptions.setTransportMode(RouteOptions.TransportMode.PEDESTRIAN);
+        routeOptions.setTransportMode(RouteOptions.TransportMode.BICYCLE);
         routeOptions.setRouteType(RouteOptions.Type.FASTEST);
         routePlan.setRouteOptions(routeOptions);
 
         // Select Waypoints for your routes
         // Start
-        if (positioningManager != null) {
-            currentLocation.setCoordinate(positioningManager.getPosition().getCoordinate());
-        }
-
         routePlan.addWaypoint(new RouteWaypoint(currentLocation.getCoordinate()));
         Timber.d("Startpoint set! LAT:" + currentLocation.getLatitude() + " LONG:" + currentLocation.getLongitude());
 
