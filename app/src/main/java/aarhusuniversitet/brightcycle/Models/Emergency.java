@@ -1,4 +1,4 @@
-package aarhusuniversitet.brightcycle;
+package aarhusuniversitet.brightcycle.Models;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -6,15 +6,16 @@ import android.content.Intent;
 import android.net.Uri;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.here.android.mpa.common.GeoCoordinate;
 
 public class Emergency {
 
+    private static final String EMERGENCY_NUMBER = "112";
+
     public static void makeEmergencyCall(Activity activity) {
         try {
             Intent callIntent = new Intent(Intent.ACTION_CALL);
-            callIntent.setData(Uri.parse("tel:112"));
+            callIntent.setData(Uri.parse("tel:"+ EMERGENCY_NUMBER));
             if (callIntent.resolveActivity(activity.getPackageManager()) != null) {
                 activity.startActivity(callIntent);
             }
@@ -23,15 +24,15 @@ public class Emergency {
         }
     }
 
-    public static void makeEmergencySMS(Activity activity, GeoCoordinate latLng) {
+    public static void makeEmergencySMS(Activity activity, GeoCoordinate geoLocation) {
         String message = "SOS I have an emergency! Please call me ASAP!";
-        if (latLng != null) {
-            message = "SOS I have an emergency at: " + latLng.getLatitude() + ", " + latLng.getLongitude();
+        if (geoLocation != null) {
+            message = "SOS I have an emergency at: " + geoLocation.getLatitude() + ", " + geoLocation.getLongitude();
         }
 
-        Uri smsUri = Uri.parse("tel:112");
+        Uri smsUri = Uri.parse("tel:" + EMERGENCY_NUMBER);
         Intent intent = new Intent(Intent.ACTION_VIEW, smsUri);
-        intent.putExtra("address", "112");
+        intent.putExtra("address", EMERGENCY_NUMBER);
         intent.putExtra("sms_body", message);
         intent.setType("vnd.android-dir/mms-sms");
 

@@ -47,7 +47,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import aarhusuniversitet.brightcycle.Models.GeoLocation;
+import aarhusuniversitet.brightcycle.Models.Emergency;
 import br.com.mauker.materialsearchview.MaterialSearchView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -71,7 +71,8 @@ public class HereMapsActivity extends AppCompatActivity {
     private boolean appPaused;
     private Route route;
     private static int routeColor;
-    private GeoLocation currentLocation;
+
+    private DrivingInformation drivingInformation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,8 +89,8 @@ public class HereMapsActivity extends AppCompatActivity {
         createSearchSuggestionsOnTextChange();
         initFabButton();
 
+        drivingInformation = DrivingInformation.getInstance(this, BluetoothConnection.getInstance(this));
         routeColor = getApplicationContext().getColor(R.color.fab_material_amber_500);
-        currentLocation = new GeoLocation(56.16294, 10.20392); // Mock location
     }
 
     public void onResume() {
@@ -158,13 +159,14 @@ public class HereMapsActivity extends AppCompatActivity {
 
                 // Set position manager to get current location.
                 positioningManager = PositioningManager.getInstance();
-                if (positioningManager != null) {
-                    positioningManager.start(PositioningManager.LocationMethod.GPS_NETWORK);
-                }
 
                 positioningManager.addListener(
                         new WeakReference<PositioningManager.OnPositionChangedListener>(positionListener));
 
+                if (positioningManager.start(PositioningManager.LocationMethod.GPS_NETWORK)) {
+                    // Position updates started successfully.
+                    Timber.d("Current location getting started.");
+                }
                 Timber.d("Initialized Here maps");
             } else {
                 Timber.d("Initializing Here Maps Failed... " + error);
@@ -211,8 +213,7 @@ public class HereMapsActivity extends AppCompatActivity {
 
         // Select Waypoints for your routes
         // Start
-        routePlan.addWaypoint(new RouteWaypoint(currentLocation.getCoordinate()));
-        Timber.d("Startpoint set! LAT:" + currentLocation.getLatitude() + " LONG:" + currentLocation.getLongitude());
+        routePlan.addWaypoint(new RouteWaypoint(drivingInformation.currentLocation.getCoordinate()));
 
         // Destination
         routePlan.addWaypoint(new RouteWaypoint(endPoint));
@@ -228,15 +229,16 @@ public class HereMapsActivity extends AppCompatActivity {
                 public void onPositionUpdated(PositioningManager.LocationMethod method,
                                               GeoPosition position, boolean isMapMatched) {
                     if (!appPaused) {
-                        currentLocation.setCoordinate(position.getCoordinate());
+                        drivingInformation.currentLocation.setCoordinate(position.getCoordinate());
                     }
                 }
 
                 public void onPositionFixChanged(PositioningManager.LocationMethod method,
                                                  PositioningManager.LocationStatus status) {
-                    Timber.d("Position changed: " + status.name());
-                    if(status == PositioningManager.LocationStatus.AVAILABLE){
-                        currentLocation.setCoordinate(positioningManager.getPosition().getCoordinate());
+                    if (status == PositioningManager.LocationStatus.AVAILABLE) {
+                        Timber.d("Curren location available!");
+                        drivingInformation.currentLocation.setCoordinate(positioningManager.getPosition().getCoordinate());
+                        map.setCenter(drivingInformation.currentLocation.getCoordinate(), Map.Animation.BOW);
                     }
                 }
             };
@@ -481,7 +483,7 @@ public class HereMapsActivity extends AppCompatActivity {
 
     private void getCoordinates(String address) {
         ResultListener<List<Location>> listener = new GeocodeListener();
-        GeocodeRequest request = new GeocodeRequest(address).setSearchArea(currentLocation.getCoordinate(), 5000);
+        GeocodeRequest request = new GeocodeRequest(address).setSearchArea(drivingInformation.currentLocation.getCoordinate(), 5000);
 
         if (request.execute(listener) != ErrorCode.NONE) {
             Timber.d("Error getting geocoordinates of destination...");
@@ -539,7 +541,7 @@ public class HereMapsActivity extends AppCompatActivity {
                             Emergency.makeEmergencyCall(this);
                             break;
                         case 1:
-                            Emergency.makeEmergencySMS(this, currentLocation.getCoordinate());
+                            Emergency.makeEmergencySMS(this, drivingInformation.currentLocation.getCoordinate());
                             break;
                         case 2:
                             Intent intent = new Intent(this, SettingsActivity.class);
