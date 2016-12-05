@@ -89,7 +89,6 @@ public class HereMapsActivity extends AppCompatActivity {
         createSearchSuggestionsOnTextChange();
         initFabButton();
 
-        drivingInformation = DrivingInformation.getInstance(this, BluetoothConnection.getInstance(this));
         routeColor = getApplicationContext().getColor(R.color.fab_material_amber_500);
     }
 
@@ -167,6 +166,9 @@ public class HereMapsActivity extends AppCompatActivity {
                     // Position updates started successfully.
                     Timber.d("Current location getting started.");
                 }
+
+                drivingInformation = DrivingInformation.getInstance(this, BluetoothConnection.getInstance(this));
+
                 Timber.d("Initialized Here maps");
             } else {
                 Timber.d("Initializing Here Maps Failed... " + error);
