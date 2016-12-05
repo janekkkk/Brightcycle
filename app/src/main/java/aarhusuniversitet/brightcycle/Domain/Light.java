@@ -1,4 +1,4 @@
-package aarhusuniversitet.brightcycle.Models;
+package aarhusuniversitet.brightcycle.Domain;
 
 public class Light {
 

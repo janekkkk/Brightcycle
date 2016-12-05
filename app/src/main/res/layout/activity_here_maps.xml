@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="aarhusuniversitet.brightcycle.HereMapsActivity">
+    tools:context="aarhusuniversitet.brightcycle.MapsActivity">
 
     <include layout="@layout/content_here_maps" />
 

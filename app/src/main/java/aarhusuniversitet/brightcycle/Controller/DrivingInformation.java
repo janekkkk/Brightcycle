@@ -1,4 +1,4 @@
-package aarhusuniversitet.brightcycle;
+package aarhusuniversitet.brightcycle.Controller;
 
 import android.app.Activity;
 
@@ -6,13 +6,14 @@ import com.here.android.mpa.common.GeoCoordinate;
 
 import java.util.ArrayList;
 
-import aarhusuniversitet.brightcycle.Models.Accelerometer;
-import aarhusuniversitet.brightcycle.Models.BackLight;
-import aarhusuniversitet.brightcycle.Models.Blinker;
-import aarhusuniversitet.brightcycle.Models.GeoLocation;
-import aarhusuniversitet.brightcycle.Models.Light;
-import aarhusuniversitet.brightcycle.Models.LightSensor;
-import aarhusuniversitet.brightcycle.Models.Sensor;
+import aarhusuniversitet.brightcycle.BluetoothConnection;
+import aarhusuniversitet.brightcycle.Domain.Accelerometer;
+import aarhusuniversitet.brightcycle.Domain.BackLight;
+import aarhusuniversitet.brightcycle.Domain.Blinker;
+import aarhusuniversitet.brightcycle.Domain.GeoLocation;
+import aarhusuniversitet.brightcycle.Domain.Light;
+import aarhusuniversitet.brightcycle.Domain.LightSensor;
+import aarhusuniversitet.brightcycle.Domain.Sensor;
 
 public class DrivingInformation {
 
@@ -22,7 +23,6 @@ public class DrivingInformation {
     public Sensor accelerometer;
     public GeoLocation currentLocation;
     public GeoLocation savedBikeLocation;
-    public ArrayList<GeoLocation> savedLocations;
     public GeoCoordinate mockLocation;
 
     protected Activity activity;
@@ -87,7 +87,7 @@ public class DrivingInformation {
                     lights) {
                 if (light instanceof Blinker && ((Blinker) light).blinking) {
                     ((Blinker) light).stopBlink();
-                    bluetoothConnection.sendData("rightBlinker", 1);
+                    bluetoothConnection.sendData("right", 1);
                 }
             }
         }
@@ -100,7 +100,6 @@ public class DrivingInformation {
     }
 
     private void initializeLocations() {
-        savedLocations = new ArrayList<>();
         mockLocation = new GeoCoordinate(56.14703396, 10.20783076);
         savedBikeLocation = new GeoLocation();
         currentLocation = new GeoLocation(mockLocation);

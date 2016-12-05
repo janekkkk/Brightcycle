@@ -50,7 +50,7 @@
             android:value="@string/here_app_license" />
 
         <activity
-            android:name=".HereMapsActivity"
+            android:name=".MapsActivity"
             android:label="@string/title_activity_here_maps" />
 
         <provider

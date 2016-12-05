@@ -39,7 +39,6 @@ import com.mikepenz.materialdrawer.DrawerBuilder;
 import com.mikepenz.materialdrawer.holder.ImageHolder;
 import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
-import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.scalified.fab.ActionButton;
 
 import java.lang.ref.WeakReference;
@@ -47,14 +46,15 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import aarhusuniversitet.brightcycle.Models.Emergency;
+import aarhusuniversitet.brightcycle.Controller.DrivingInformation;
+import aarhusuniversitet.brightcycle.Domain.Emergency;
 import br.com.mauker.materialsearchview.MaterialSearchView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import timber.log.Timber;
 
-public class HereMapsActivity extends AppCompatActivity {
+public class MapsActivity extends AppCompatActivity {
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -90,7 +90,6 @@ public class HereMapsActivity extends AppCompatActivity {
         initFabButton();
 
         routeColor = getApplicationContext().getColor(R.color.fab_material_amber_500);
-        
     }
 
     public void onResume() {
@@ -556,7 +555,7 @@ public class HereMapsActivity extends AppCompatActivity {
                             Emergency.makeEmergencySMS(this, drivingInformation.currentLocation.getCoordinate());
                             break;
                         case 3:
-                            Intent intent = new Intent(HereMapsActivity.this, SettingActivity.class);
+                            Intent intent = new Intent(MapsActivity.this, SettingActivity.class);
                             startActivity(intent);
                             break;
                     }
