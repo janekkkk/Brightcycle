@@ -6,9 +6,4 @@ public class Accelerometer implements Sensor {
     public int read() {
         return 0;
     }
-
-    @Override
-    public void write() {
-
-    }
 }

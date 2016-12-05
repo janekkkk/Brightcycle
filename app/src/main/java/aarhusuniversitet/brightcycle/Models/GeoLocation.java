@@ -6,12 +6,18 @@ public class GeoLocation {
     private String address;
     private double longitude, latitude;
 
-    public GeoLocation(double longitude, double latitude) {
+    public GeoLocation(double latitude, double longitude) {
         this.longitude = longitude;
         this.latitude = latitude;
     }
-    public GeoLocation(){
 
+    public GeoLocation() {
+
+    }
+
+    public GeoLocation(GeoCoordinate geoCoordinate) {
+        this.latitude = geoCoordinate.getLatitude();
+        this.longitude = geoCoordinate.getLongitude();
     }
 
     public GeoCoordinate getCoordinate() {

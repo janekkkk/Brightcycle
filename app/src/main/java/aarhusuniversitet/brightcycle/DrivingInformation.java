@@ -23,6 +23,7 @@ public class DrivingInformation {
     public GeoLocation currentLocation;
     public GeoLocation savedBikeLocation;
     public ArrayList<GeoLocation> savedLocations;
+    public GeoCoordinate mockLocation;
 
     protected Activity activity;
     public ArrayList<Light> lights;
@@ -44,6 +45,27 @@ public class DrivingInformation {
         }
     }
 
+    public void turnOffLights() {
+        for (Light light :
+                lights) {
+            light.turnOff();
+        }
+    }
+
+    public void turnOnLights() {
+        for (Light light :
+                lights) {
+            light.turnOn();
+        }
+    }
+
+    public void setBrightnessLights(int brightness) {
+        for (Light light :
+                lights) {
+            light.setBrightness(brightness);
+        }
+    }
+
     private void initialize() {
         initializeLocations();
         initializeSensors();
@@ -52,9 +74,9 @@ public class DrivingInformation {
 
     private void initializeLocations() {
         savedLocations = new ArrayList<>();
-        GeoCoordinate mockLocation = new GeoCoordinate(56.16294, 10.20392);
+        mockLocation = new GeoCoordinate(56.14703396, 10.20783076);
         savedBikeLocation = new GeoLocation();
-        currentLocation = new GeoLocation(mockLocation.getLatitude(), mockLocation.getLongitude());
+        currentLocation = new GeoLocation(mockLocation);
     }
 
     private void initializeSensors() {
@@ -72,5 +94,4 @@ public class DrivingInformation {
         lights.add(rightBlinker);
         lights.add(backLight);
     }
-
 }

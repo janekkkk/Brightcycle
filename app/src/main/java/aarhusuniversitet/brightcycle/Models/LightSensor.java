@@ -7,8 +7,4 @@ public class LightSensor implements Sensor {
         return 0;
     }
 
-    @Override
-    public void write() {
-
-    }
 }

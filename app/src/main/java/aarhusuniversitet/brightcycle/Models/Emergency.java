@@ -15,7 +15,7 @@ public class Emergency {
     public static void makeEmergencyCall(Activity activity) {
         try {
             Intent callIntent = new Intent(Intent.ACTION_CALL);
-            callIntent.setData(Uri.parse("tel:"+ EMERGENCY_NUMBER));
+            callIntent.setData(Uri.parse("tel:" + EMERGENCY_NUMBER));
             if (callIntent.resolveActivity(activity.getPackageManager()) != null) {
                 activity.startActivity(callIntent);
             }

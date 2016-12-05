@@ -151,7 +151,7 @@ public class HereMapsActivity extends AppCompatActivity {
                 map.getPositionIndicator().setVisible(true);
 
                 // Set the map center to the Aarhus region
-                map.setCenter(new GeoCoordinate(56.14703396, 10.20783076),
+                map.setCenter(drivingInformation.mockLocation,
                         Map.Animation.NONE);
 
                 // Set the zoom level to the average between min and max
@@ -207,7 +207,7 @@ public class HereMapsActivity extends AppCompatActivity {
         // Select routing options via RoutingMode
         RoutePlan routePlan = new RoutePlan();
         RouteOptions routeOptions = new RouteOptions();
-        routeOptions.setTransportMode(RouteOptions.TransportMode.BICYCLE);
+        routeOptions.setTransportMode(RouteOptions.TransportMode.CAR);
         routeOptions.setRouteType(RouteOptions.Type.FASTEST);
         routePlan.setRouteOptions(routeOptions);
 
@@ -236,7 +236,7 @@ public class HereMapsActivity extends AppCompatActivity {
                 public void onPositionFixChanged(PositioningManager.LocationMethod method,
                                                  PositioningManager.LocationStatus status) {
                     if (status == PositioningManager.LocationStatus.AVAILABLE) {
-                        Timber.d("Curren location available!");
+                        Timber.d("Current location available!");
                         drivingInformation.currentLocation.setCoordinate(positioningManager.getPosition().getCoordinate());
                         map.setCenter(drivingInformation.currentLocation.getCoordinate(), Map.Animation.BOW);
                     }
@@ -302,7 +302,7 @@ public class HereMapsActivity extends AppCompatActivity {
     private final NavigationManager.RerouteListener navigationRerouteListener = new NavigationManager.RerouteListener() {
         @Override
         public void onRerouteEnd(Route route) {
-            Toast.makeText(getApplicationContext(), "Your route was udated!", Toast.LENGTH_LONG)
+            Toast.makeText(getApplicationContext(), "Your route was updated!", Toast.LENGTH_LONG)
                     .show();
 
             map.removeMapObject(mapRoute);
