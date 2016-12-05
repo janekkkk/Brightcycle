@@ -90,8 +90,7 @@ public class HereMapsActivity extends AppCompatActivity {
         initFabButton();
 
         routeColor = getApplicationContext().getColor(R.color.fab_material_amber_500);
-
-        drivingInformation.backLight.setBrightness(100);
+        
     }
 
     public void onResume() {
