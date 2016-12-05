@@ -19,10 +19,12 @@ import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Switch;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -48,6 +50,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     SeekBar manuellBright;
     @BindView(R.id.btnDisconnect)
     Button disconnect;
+    BluetoothConnection bluetoothConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,13 +58,15 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         setContentView(R.layout.settings_brightness);
         ButterKnife.bind(this);
 
+        bluetoothConnection = BluetoothConnection.getInstance(getApplicationContext());
+
         autoBright.setChecked(true);
         autoBright.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){
                    manuellBright.setEnabled(false);
-                   //TODO send microController the information that he change it by itself
+                   //TODO send microController the information that it change the brightness by itself
                 }
                 else{
                     manuellBright.setEnabled(true);
@@ -81,12 +86,19 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             }
 
             public void onStopTrackingTouch (SeekBar seekBar){
-                //TODO I gess it say's here what you wanted, so here send data to mC
+                Toast.makeText(SettingsActivity.this,"Brightness: "+progressChanged+"%",Toast.LENGTH_LONG).show();
+                //TODO Send brightness data to mC
             }
         });
-    };
 
-    
+        disconnect.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // TODO disconnect the Bluetooth connection
+                bluetoothConnection.disconnect();
+            }
+        });
+
+    };
 
 
 
@@ -96,7 +108,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
      */
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
+/*    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
             String stringValue = value.toString();
@@ -148,7 +160,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      * Helper method to determine if the device has an extra-large screen. For
      * example, 10" tablets are extra-large.
      */
-    private static boolean isXLargeTablet(Context context) {
+/*    private static boolean isXLargeTablet(Context context) {
         return (context.getResources().getConfiguration().screenLayout
                 & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_XLARGE;
     }
@@ -162,7 +174,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      *
      * @see #sBindPreferenceSummaryToValueListener
      */
-    private static void bindPreferenceSummaryToValue(Preference preference) {
+/*    private static void bindPreferenceSummaryToValue(Preference preference) {
         // Set the listener to watch for value changes.
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
@@ -183,12 +195,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     /**
      * Set up the {@link android.app.ActionBar}, if the API is available.
      */
-    private void setupActionBar() {
+/*    private void setupActionBar() {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             // Show the Up button in the action bar.
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-    }
+    }*/
 
 }

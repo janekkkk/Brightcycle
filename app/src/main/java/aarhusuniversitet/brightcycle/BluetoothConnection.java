@@ -36,6 +36,8 @@ public class BluetoothConnection {
         bluetoothSPP.connect(data);
     }
 
+    public void disconnect (){bluetoothSPP.disconnect();}
+
     public void setupBluetoothConnection() {
         bluetoothSPP.setupService();
         bluetoothSPP.startService(BluetoothState.DEVICE_OTHER);
