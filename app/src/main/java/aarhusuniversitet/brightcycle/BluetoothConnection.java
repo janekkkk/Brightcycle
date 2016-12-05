@@ -66,4 +66,7 @@ public class BluetoothConnection {
     private void setOndataReceivedListener() {
 
     }
+
+    public void sendData(String device, int value) {
+    }
 }

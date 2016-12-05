@@ -7,4 +7,8 @@ public class LightSensor implements Sensor {
         return 0;
     }
 
+    public boolean darkOutside(){
+        return read() > 50;
+    }
+
 }

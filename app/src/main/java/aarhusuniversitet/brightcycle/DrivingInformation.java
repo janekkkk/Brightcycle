@@ -50,6 +50,8 @@ public class DrivingInformation {
                 lights) {
             light.turnOff();
         }
+
+        bluetoothConnection.sendData("allLights", 0);
     }
 
     public void turnOnLights() {
@@ -57,12 +59,37 @@ public class DrivingInformation {
                 lights) {
             light.turnOn();
         }
+
+        bluetoothConnection.sendData("allLights", 100);
     }
 
     public void setBrightnessLights(int brightness) {
         for (Light light :
                 lights) {
             light.setBrightness(brightness);
+        }
+
+        bluetoothConnection.sendData("allLights", brightness);
+    }
+
+    public void startBlinking(String direction) {
+        if (direction.equals("right")) {
+            ((Blinker) rightBlinker).blink();
+        }
+        else ((Blinker) leftBlinker).blink();
+
+        bluetoothConnection.sendData(direction, 1);
+    }
+
+    public void stopBlinking() {
+        if (((Accelerometer) accelerometer).isOutOfTurn()) {
+            for (Light light :
+                    lights) {
+                if (light instanceof Blinker && ((Blinker) light).blinking) {
+                    ((Blinker) light).stopBlink();
+                    bluetoothConnection.sendData("rightBlinker", 1);
+                }
+            }
         }
     }
 
