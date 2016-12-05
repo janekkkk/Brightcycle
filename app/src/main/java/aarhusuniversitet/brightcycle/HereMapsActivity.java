@@ -143,6 +143,8 @@ public class HereMapsActivity extends AppCompatActivity {
 
         mapFragment.init(error -> {
             if (error == OnEngineInitListener.Error.NONE) {
+                drivingInformation = DrivingInformation.getInstance(this, BluetoothConnection.getInstance(this));
+
                 // retrieve a reference of the map from the map fragment
                 map = mapFragment.getMap();
                 coreRouter = new CoreRouter();
@@ -167,9 +169,7 @@ public class HereMapsActivity extends AppCompatActivity {
                     // Position updates started successfully.
                     Timber.d("Current location getting started.");
                 }
-
-                drivingInformation = DrivingInformation.getInstance(this, BluetoothConnection.getInstance(this));
-
+                
                 Timber.d("Initialized Here maps");
             } else {
                 Timber.d("Initializing Here Maps Failed... " + error);
