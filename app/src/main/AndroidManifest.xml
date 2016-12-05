@@ -50,9 +50,6 @@
             android:value="@string/here_app_license" />
 
         <activity
-            android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings" />
-        <activity
             android:name=".HereMapsActivity"
             android:label="@string/title_activity_here_maps" />
 
@@ -69,16 +66,16 @@
             android:label="HereMapService"
             android:process="global.Here.Map.Service.v2">
             <intent-filter>
-                <action android:name="com.here.android.mpa.service.MapService"></action>
+                <action android:name="com.here.android.mpa.service.MapService" />
             </intent-filter>
         </service>
-
         <service
             android:name="com.here.services.internal.LocationService"
             android:enabled="true"
             android:exported="false"
-            android:process=":remote"></service>
+            android:process=":remote" />
 
+        <activity android:name=".SettingActivity"></activity>
     </application>
 
 </manifest>

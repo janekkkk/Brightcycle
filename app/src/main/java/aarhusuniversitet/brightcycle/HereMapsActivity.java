@@ -546,7 +546,7 @@ public class HereMapsActivity extends AppCompatActivity {
                             Emergency.makeEmergencySMS(this, drivingInformation.currentLocation.getCoordinate());
                             break;
                         case 2:
-                            Intent intent = new Intent(this, SettingsActivity.class);
+                            Intent intent = new Intent(this, SettingActivity.class);
                             startActivity(intent);
                             break;
                     }
@@ -581,7 +581,7 @@ public class HereMapsActivity extends AppCompatActivity {
                 searchView.openSearch();
                 return true;
             case R.id.action_settings:
-                Intent intent = new Intent(this, SettingsActivity.class);
+                Intent intent = new Intent(this, SettingActivity.class);
                 startActivity(intent);
                 return true;
             default:
