@@ -81,13 +81,13 @@ public class DrivingInformation {
         bluetoothConnection.sendData(direction, 1);
     }
 
-    public void stopBlinking() {
+    public void stopBlinking(String direction) {
         if (((Accelerometer) accelerometer).isOutOfTurn()) {
             for (Light light :
                     lights) {
                 if (light instanceof Blinker && ((Blinker) light).blinking) {
                     ((Blinker) light).stopBlink();
-                    bluetoothConnection.sendData("right", 1);
+                    bluetoothConnection.sendData(direction, 0);
                 }
             }
         }
