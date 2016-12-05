@@ -169,7 +169,7 @@ public class HereMapsActivity extends AppCompatActivity {
                     // Position updates started successfully.
                     Timber.d("Current location getting started.");
                 }
-                
+
                 Timber.d("Initialized Here maps");
             } else {
                 Timber.d("Initializing Here Maps Failed... " + error);
