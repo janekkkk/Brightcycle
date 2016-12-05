@@ -57,6 +57,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_brightness);
         ButterKnife.bind(this);
+        disconnect.setOnClickListener(detach);
 
         bluetoothConnection = BluetoothConnection.getInstance(getApplicationContext());
 
@@ -64,39 +65,40 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         autoBright.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
-                   manuellBright.setEnabled(false);
-                   //TODO send microController the information that it change the brightness by itself
-                }
-                else{
+                if (isChecked) {
+                    manuellBright.setEnabled(false);
+                    //TODO send microController the information that it change the brightness by itself
+                } else {
                     manuellBright.setEnabled(true);
                 }
             }
         });
 
-        manuellBright.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+        manuellBright.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressChanged = 0;
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChanged = progress;
             }
 
-            public void onStartTrackingTouch(SeekBar seekBar){
+            public void onStartTrackingTouch(SeekBar seekBar) {
                 //TODO Auto-generated method stub
             }
 
-            public void onStopTrackingTouch (SeekBar seekBar){
-                Toast.makeText(SettingsActivity.this,"Brightness: "+progressChanged+"%",Toast.LENGTH_LONG).show();
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                Toast.makeText(SettingsActivity.this, "Brightness: " + progressChanged + "%", Toast.LENGTH_LONG).show();
                 //TODO Send brightness data to mC
             }
         });
 
-        disconnect.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                // TODO disconnect the Bluetooth connection
-                bluetoothConnection.disconnect();
+    }
+
+    View.OnClickListener detach = new View.OnClickListener() {
+        public void onClick(View v) {
+            // TODO disconnect the Bluetooth connection
+            bluetoothConnection.disconnect();
             }
-        });
+        };
 
     };
 
@@ -201,6 +203,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // Show the Up button in the action bar.
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-    }*/
+    }
 
-}
+}*/
