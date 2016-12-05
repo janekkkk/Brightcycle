@@ -11,4 +11,8 @@ public class Blinker extends Light {
     public void blink() {
 
     }
+
+    public void stopBlink() {
+        blinking = false;
+    }
 }

@@ -2,8 +2,10 @@ package aarhusuniversitet.brightcycle.Models;
 
 public class Light {
 
-    private int brightness = 0;
-    private boolean lightOn = false;
+    protected int brightness = 0;
+    protected final int MIN_LIGHT_VALUE = 0;
+    protected final int MAX_LIGHT_VALUE = 100;
+    public boolean isOn = false;
     protected Sensor accelerometer;
     protected Sensor lightSensor;
 
@@ -13,26 +15,25 @@ public class Light {
     }
 
     public void toggle() {
-        if (lightOn) {
+        if (isOn) {
             turnOff();
         } else {
-            turnOff();
+            turnOn();
         }
     }
 
     public void turnOn() {
-        lightOn = true;
+        isOn = true;
     }
 
     public void turnOff() {
-        lightOn = false;
+        isOn = false;
     }
 
     public void setBrightness(int brightness) {
+        if (brightness <= MIN_LIGHT_VALUE) {
+            isOn = false;
+        } else isOn = true;
         this.brightness = brightness;
-    }
-
-    public int getBrightness() {
-        return brightness;
     }
 }

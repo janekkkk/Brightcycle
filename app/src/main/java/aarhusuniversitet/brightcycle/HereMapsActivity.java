@@ -90,6 +90,8 @@ public class HereMapsActivity extends AppCompatActivity {
         initFabButton();
 
         routeColor = getApplicationContext().getColor(R.color.fab_material_amber_500);
+
+        drivingInformation.backLight.setBrightness(100);
     }
 
     public void onResume() {
@@ -188,6 +190,12 @@ public class HereMapsActivity extends AppCompatActivity {
             if (error == NavigationManager.Error.NONE) {
                 fabButton.setVisibility(View.INVISIBLE);
                 Timber.d("Navigation started!");
+                Toast.makeText(getApplicationContext(), "Navigation started!",
+                        Toast.LENGTH_SHORT).show();
+                map.setCenter(drivingInformation.currentLocation.getCoordinate(), Map.Animation.BOW);
+                map.setZoomLevel(map.getMaxZoomLevel());
+                navigationManager
+                        .setNaturalGuidanceMode(EnumSet.of(NavigationManager.NaturalGuidanceMode.JUNCTION));
             } else {
                 Timber.d("Navigation starting error: " + error);
                 navigationManager.setMap(null);
@@ -195,8 +203,7 @@ public class HereMapsActivity extends AppCompatActivity {
         } else {
             Timber.d("Navigation starting error...");
         }
-        navigationManager
-                .setNaturalGuidanceMode(EnumSet.of(NavigationManager.NaturalGuidanceMode.JUNCTION));
+
     }
 
     public void getDirections(GeoCoordinate endPoint) {
@@ -249,6 +256,7 @@ public class HereMapsActivity extends AppCompatActivity {
 
         @Override
         public void onProgress(int percentage) {
+
         }
 
         @Override
@@ -256,6 +264,9 @@ public class HereMapsActivity extends AppCompatActivity {
 
             // If the route was calculated successfully
             if (error == RoutingError.NONE && routeResult.get(0).getRoute() != null) {
+                Toast.makeText(getApplicationContext(), "Calculating route finished!",
+                        Toast.LENGTH_SHORT).show();
+
                 // create a map route object and place it on the map
                 route = routeResult.get(0).getRoute();
                 mapRoute = new MapRoute(route);
@@ -532,9 +543,9 @@ public class HereMapsActivity extends AppCompatActivity {
                         new DividerDrawerItem(),
                         new PrimaryDrawerItem().withIdentifier(3).withName("Settings"),
                         new DividerDrawerItem(),
-                        new PrimaryDrawerItem().withIdentifier(4).withName("Show parked bicycle"),
-                        new DividerDrawerItem(),
-                        new PrimaryDrawerItem().withIdentifier(5).withName("Last searched locations")
+                        new PrimaryDrawerItem().withIdentifier(4).withName("Show parked bicycle")
+//                        new DividerDrawerItem(),
+//                        new PrimaryDrawerItem().withIdentifier(5).withName("Last searched locations")
                 )
                 .withOnDrawerItemClickListener((view, i, iDrawerItem) -> {
                     Timber.d("Item " + Integer.toString(i) + " Clicked");
@@ -560,11 +571,11 @@ public class HereMapsActivity extends AppCompatActivity {
         drawer.updateIcon(3, new ImageHolder(R.drawable.ic_settings));
         drawer.updateIcon(4, new ImageHolder(R.drawable.ic_directions_bike));
 
-        drawer.addItem(new SecondaryDrawerItem().withIdentifier(6).withName("Heibersgade 12, Aarhus"));
-        drawer.addItem(new SecondaryDrawerItem().withIdentifier(7).withName("Norregade 8, Aarhus"));
-
-        drawer.updateIcon(6, new ImageHolder(R.drawable.ic_directions));
-        drawer.updateIcon(7, new ImageHolder(R.drawable.ic_directions));
+//        drawer.addItem(new SecondaryDrawerItem().withIdentifier(6).withName("Heibersgade 12, Aarhus"));
+//        drawer.addItem(new SecondaryDrawerItem().withIdentifier(7).withName("Norregade 8, Aarhus"));
+//
+//        drawer.updateIcon(6, new ImageHolder(R.drawable.ic_directions));
+//        drawer.updateIcon(7, new ImageHolder(R.drawable.ic_directions));
     }
 
     @Override
