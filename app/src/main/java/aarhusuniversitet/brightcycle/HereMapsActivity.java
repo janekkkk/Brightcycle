@@ -549,10 +549,10 @@ public class HereMapsActivity extends AppCompatActivity {
                 .withOnDrawerItemClickListener((view, i, iDrawerItem) -> {
                     Timber.d("Item " + Integer.toString(i) + " Clicked");
                     switch (i) {
-                        case 1:
+                        case 0:
                             Emergency.makeEmergencyCall(this);
                             break;
-                        case 2:
+                        case 1:
                             Emergency.makeEmergencySMS(this, drivingInformation.currentLocation.getCoordinate());
                             break;
                         case 3:
