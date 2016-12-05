@@ -29,7 +29,7 @@
         android:id="@+id/manuellBright" />
 
     <TextView
-        android:text="@string/connaction"
+        android:text="@string/connection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/setTextViewDisco" />

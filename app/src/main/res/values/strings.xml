@@ -90,5 +90,5 @@
     <string name="title_activity_here_maps">Brightcycle</string>
     <string name="start_navigation">Start navigation</string>
     <string name="auto_brightness">Automatic Brightness:</string>
-    <string name="connaction">Connaction</string>
+    <string name="connection">Connection</string>
 </resources>

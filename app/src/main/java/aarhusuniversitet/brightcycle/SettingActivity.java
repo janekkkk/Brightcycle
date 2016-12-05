@@ -31,6 +31,8 @@ public class SettingActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         disconnect.setOnClickListener(detach);
 
+        manuellBright.setEnabled(false);
+
         bluetoothConnection = BluetoothConnection.getInstance(getApplicationContext());
         autoBright.setChecked(true);
         autoBright.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {

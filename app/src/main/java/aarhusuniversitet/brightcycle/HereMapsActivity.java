@@ -539,14 +539,14 @@ public class HereMapsActivity extends AppCompatActivity {
                 .withOnDrawerItemClickListener((view, i, iDrawerItem) -> {
                     Timber.d("Item " + Integer.toString(i) + " Clicked");
                     switch (i) {
-                        case 0:
+                        case 1:
                             Emergency.makeEmergencyCall(this);
                             break;
-                        case 1:
+                        case 2:
                             Emergency.makeEmergencySMS(this, drivingInformation.currentLocation.getCoordinate());
                             break;
-                        case 2:
-                            Intent intent = new Intent(this, SettingActivity.class);
+                        case 3:
+                            Intent intent = new Intent(HereMapsActivity.this, SettingActivity.class);
                             startActivity(intent);
                             break;
                     }
