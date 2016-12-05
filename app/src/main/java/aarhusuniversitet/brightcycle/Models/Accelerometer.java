@@ -11,10 +11,7 @@ public class Accelerometer implements Sensor {
     }
 
     public boolean isOutOfTurn(){
-        if(read() < MAX_VALUE){
-            return true;
-        }
-        else return false;
+        return read() <= MAX_VALUE;
     }
 
     public boolean isBreaking(){
