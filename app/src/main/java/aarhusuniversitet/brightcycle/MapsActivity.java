@@ -62,6 +62,7 @@ public class MapsActivity extends AppCompatActivity {
 
     private MapsController mapsController;
     private DrivingInformation drivingInformation;
+    private BluetoothConnection bluetoothConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +71,9 @@ public class MapsActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
         Timber.plant(new Timber.DebugTree());
+
+        bluetoothConnection = BluetoothConnection.getInstance(this);
+        Timber.d("Still connected with bluetooth to: " + bluetoothConnection.bluetoothDevice.getName());
 
         mapsController = new MapsController(this);
         mapsController.initHereMaps();
@@ -81,6 +85,7 @@ public class MapsActivity extends AppCompatActivity {
         createSearchSuggestionsOnTextChange();
         initFabButton();
         hideBlinkers();
+
     }
 
     public void onResume() {

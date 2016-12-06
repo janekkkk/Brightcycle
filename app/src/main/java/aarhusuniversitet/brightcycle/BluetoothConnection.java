@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 
 import aarhusuniversitet.brightcycle.Controller.DrivingInformation;
+import aarhusuniversitet.brightcycle.Domain.BlueteethDevice;
 import app.akexorcist.bluetotohspp.library.BluetoothSPP;
 import app.akexorcist.bluetotohspp.library.BluetoothState;
 import timber.log.Timber;
@@ -15,6 +16,7 @@ public class BluetoothConnection {
     private static BluetoothConnection instance = null;
     private DrivingInformation drivingInformation;
     private Activity activity;
+    public BlueteethDevice bluetoothDevice;
 
     public static BluetoothConnection getInstance(Activity activity) {
         if (instance == null) {
@@ -56,7 +58,11 @@ public class BluetoothConnection {
         bluetoothSPP.setBluetoothConnectionListener(new BluetoothSPP.BluetoothConnectionListener() {
             public void onDeviceConnected(String name, String address) {
                 Timber.d("Connected! " + name + " " + address);
+                bluetoothDevice = new BlueteethDevice(name, address);
                 bluetoothSPP.send("a", true);
+
+                Intent intent = new Intent(activity, MapsActivity.class);
+                activity.startActivity(intent);
             }
 
             public void onDeviceDisconnected() {
