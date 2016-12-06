@@ -1,7 +1,6 @@
 package aarhusuniversitet.brightcycle;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 
 import aarhusuniversitet.brightcycle.Controller.DrivingInformation;
@@ -51,6 +50,7 @@ public class BluetoothConnection {
         bluetoothSPP.startService(BluetoothState.DEVICE_OTHER);
         setOndataReceivedListener();
         setConnectionListener();
+        pairedDeviceListener();
     }
 
     private void setConnectionListener() {
@@ -58,6 +58,8 @@ public class BluetoothConnection {
             public void onDeviceConnected(String name, String address) {
                 // Do something when successfully connected
                 Timber.d("Connected! " + name + " " + address);
+                bluetoothSPP.send("a", true);
+
             }
 
             public void onDeviceDisconnected() {
@@ -69,6 +71,21 @@ public class BluetoothConnection {
             public void onDeviceConnectionFailed() {
                 // Do something when connection failed
                 Timber.d("Bluetooth connection failed!");
+            }
+        });
+    }
+
+    private void pairedDeviceListener() {
+        bluetoothSPP.setAutoConnectionListener(new BluetoothSPP.AutoConnectionListener() {
+            public void onNewConnection(String name, String address) {
+                // Do something when earching for new connection device
+                Timber.d("Connected " + name);
+            }
+
+            public void onAutoConnectionStarted() {
+                // Do something when auto connection has started
+                Timber.d("Reconnected");
+
             }
         });
     }
