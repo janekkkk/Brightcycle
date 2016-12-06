@@ -129,7 +129,6 @@ public class MapsActivity extends AppCompatActivity {
 
     public void initMapCallback() {
         drivingInformation = DrivingInformation.getInstance(this, BluetoothConnection.getInstance(this));
-        showBlinkers();
     }
 
     public void routeCalculatedCallback() {
@@ -339,16 +338,16 @@ public class MapsActivity extends AppCompatActivity {
     }
 
     private void showBlinkers() {
+        Snackbar.make(buttonLayout, "Use the left or right side of the screen to activate the blinkers", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
+
         btnBlinkerLeft.setVisibility(View.VISIBLE);
         btnBlinkerRight.setVisibility(View.VISIBLE);
         btnBlinkerLeft.setBackgroundColor(getApplicationContext().getColor(R.color.fab_material_amber_500));
         btnBlinkerRight.setBackgroundColor(getApplicationContext().getColor(R.color.fab_material_amber_500));
+        btnBlinkerLeft.getBackground().setAlpha(128);
+        btnBlinkerRight.getBackground().setAlpha(128);
 
-        btnBlinkerLeft.getBackground().setAlpha(64);  // 25% transparent
-        btnBlinkerRight.getBackground().setAlpha(64);  // 25% transparent
-
-        Snackbar.make(buttonLayout, "Use the left or right side of the screen to activate the blinkers", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
         Handler handler = new Handler();
         handler.postDelayed(() -> {
             btnBlinkerRight.setBackgroundColor(Color.TRANSPARENT);
@@ -356,22 +355,18 @@ public class MapsActivity extends AppCompatActivity {
 
             btnBlinkerLeft.setBackgroundColor(Color.TRANSPARENT);
             btnBlinkerLeft.setText("");
-        }, 10000);
+        }, 5000);
 
     }
 
     @OnClick(R.id.btnBlinkerLeft)
     public void buttonBlinkerLeftClicked(View button) {
         Timber.d("Left button pressed");
-        Toast.makeText(getApplicationContext(), "Left button pressed",
-                Toast.LENGTH_SHORT).show();
     }
 
     @OnClick(R.id.btnBlinkerRight)
     public void buttonBlinkerRightClicked(View button) {
         Timber.d("Right button pressed");
-        Toast.makeText(getApplicationContext(), "Right button pressed",
-                Toast.LENGTH_SHORT).show();
     }
 
     @OnClick(R.id.fabButton)
