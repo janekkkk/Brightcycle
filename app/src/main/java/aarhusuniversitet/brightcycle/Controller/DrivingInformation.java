@@ -28,7 +28,7 @@ public class DrivingInformation {
     protected Activity activity;
     public ArrayList<Light> lights;
     protected BluetoothConnection bluetoothConnection;
-    private static DrivingInformation drivingInformation;
+    private static DrivingInformation instance;
 
     public DrivingInformation(Activity activity, BluetoothConnection bluetoothConnection) {
         this.activity = activity;
@@ -37,12 +37,15 @@ public class DrivingInformation {
     }
 
     public static DrivingInformation getInstance(Activity activity, BluetoothConnection bluetoothConnection) {
-        if (drivingInformation == null) {
-            drivingInformation = new DrivingInformation(activity, bluetoothConnection);
-            return drivingInformation;
-        } else {
-            return drivingInformation;
+        if (instance == null) {
+            instance = new DrivingInformation(activity, bluetoothConnection);
         }
+        return instance;
+    }
+
+    public void saveLocationBike() {
+        // TODO add persistence/database activeAndroid
+        savedBikeLocation = currentLocation;
     }
 
     public void turnOffLights() {

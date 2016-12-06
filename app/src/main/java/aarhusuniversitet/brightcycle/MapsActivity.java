@@ -14,7 +14,6 @@ import android.widget.Toast;
 
 import com.here.android.mpa.common.PositioningManager;
 import com.here.android.mpa.guidance.NavigationManager;
-import com.here.android.mpa.mapping.MapRoute;
 import com.here.android.mpa.search.ErrorCode;
 import com.here.android.mpa.search.GeocodeRequest;
 import com.here.android.mpa.search.Location;
@@ -27,7 +26,6 @@ import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.scalified.fab.ActionButton;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -266,8 +264,6 @@ public class MapsActivity extends AppCompatActivity {
                         new PrimaryDrawerItem().withIdentifier(3).withName("Settings"),
                         new DividerDrawerItem(),
                         new PrimaryDrawerItem().withIdentifier(4).withName("Show parked bicycle")
-//                        new DividerDrawerItem(),
-//                        new PrimaryDrawerItem().withIdentifier(5).withName("Last searched locations")
                 )
                 .withOnDrawerItemClickListener((view, i, iDrawerItem) -> {
                     Timber.d("Item " + Integer.toString(i) + " Clicked");

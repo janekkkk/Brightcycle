@@ -1,8 +1,10 @@
 package aarhusuniversitet.brightcycle;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 
+import aarhusuniversitet.brightcycle.Controller.DrivingInformation;
 import app.akexorcist.bluetotohspp.library.BluetoothSPP;
 import app.akexorcist.bluetotohspp.library.BluetoothState;
 import timber.log.Timber;
@@ -12,16 +14,20 @@ public class BluetoothConnection {
     public static final int REQUEST_ENABLE_BT = 1;
     private BluetoothSPP bluetoothSPP;
     private static BluetoothConnection instance = null;
+    private DrivingInformation drivingInformation;
+    private Activity activity;
 
-    public static BluetoothConnection getInstance(Context context) {
+    public static BluetoothConnection getInstance(Activity activity) {
         if (instance == null) {
-            instance = new BluetoothConnection(context);
+            instance = new BluetoothConnection(activity);
         }
         return instance;
     }
 
-    public BluetoothConnection(Context context) {
-        bluetoothSPP = new BluetoothSPP(context);
+    public BluetoothConnection(Activity activity) {
+        this.activity = activity;
+        bluetoothSPP = new BluetoothSPP(activity);
+        drivingInformation = DrivingInformation.getInstance(activity, BluetoothConnection.getInstance(activity));
     }
 
     public boolean isBluetoothAvailable() {
@@ -56,7 +62,7 @@ public class BluetoothConnection {
 
             public void onDeviceDisconnected() {
                 // Do something when connection was disconnected
-                // TODO Save last location
+                drivingInformation.saveLocationBike();
                 Timber.d("Bluetooth device disconnected!");
             }
 
