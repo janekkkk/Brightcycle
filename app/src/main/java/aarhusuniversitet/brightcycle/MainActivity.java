@@ -66,11 +66,12 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this.getApplicationContext(), "Bluetooth is not available on your device.", Toast.LENGTH_LONG).show();
         }
 
-        // TODO Add line when bluetooth has to be enabled again.
-        btnConnectBluetooth.setVisibility(View.VISIBLE);
-
-        // Intent intent = new Intent(this, MapsActivity.class);
-        // startActivity(intent);
+        if (bluetoothConnection.bluetoothDevice == null) {
+            btnConnectBluetooth.setVisibility(View.VISIBLE);
+        } else {
+            Intent intent = new Intent(this, MapsActivity.class);
+            startActivity(intent);
+        }
     }
 
 
@@ -100,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == BluetoothState.REQUEST_CONNECT_DEVICE) {
             if (resultCode == Activity.RESULT_OK)
                 bluetoothConnection.setupBluetoothConnection();
-                bluetoothConnection.connect(data);
+            bluetoothConnection.connect(data);
         } else if (requestCode == BluetoothState.REQUEST_ENABLE_BT) {
             if (resultCode == Activity.RESULT_OK) {
                 btnConnectBluetooth.setVisibility(View.GONE);

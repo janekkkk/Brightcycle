@@ -67,11 +67,11 @@ public class BluetoothConnection {
 
             public void onDeviceDisconnected() {
                 drivingInformation.saveLocationBike();
+                bluetoothDevice = null;
                 Timber.d("Bluetooth device disconnected!");
             }
 
             public void onDeviceConnectionFailed() {
-                drivingInformation.saveLocationBike();
                 Timber.d("Bluetooth connection failed!");
             }
         });
