@@ -73,7 +73,10 @@ public class MapsActivity extends AppCompatActivity {
         Timber.plant(new Timber.DebugTree());
 
         bluetoothConnection = BluetoothConnection.getInstance(this);
-        Timber.d("Still connected with bluetooth to: " + bluetoothConnection.bluetoothDevice.getName());
+
+        if (bluetoothConnection.isConnected()) {
+            Timber.d("Still connected with bluetooth to: " + bluetoothConnection.bluetoothDevice.getName());
+        }
 
         mapsController = new MapsController(this);
         mapsController.initHereMaps();

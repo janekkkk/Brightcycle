@@ -39,6 +39,10 @@ public class BluetoothConnection {
         return bluetoothSPP.isBluetoothEnabled();
     }
 
+    public boolean isConnected(){
+        return bluetoothDevice == null;
+    }
+
     public void connect(Intent data) {
         bluetoothSPP.connect(data);
     }
