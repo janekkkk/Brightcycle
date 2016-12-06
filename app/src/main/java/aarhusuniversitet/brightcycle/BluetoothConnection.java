@@ -50,50 +50,35 @@ public class BluetoothConnection {
         bluetoothSPP.startService(BluetoothState.DEVICE_OTHER);
         setOndataReceivedListener();
         setConnectionListener();
-        pairedDeviceListener();
     }
 
     private void setConnectionListener() {
         bluetoothSPP.setBluetoothConnectionListener(new BluetoothSPP.BluetoothConnectionListener() {
             public void onDeviceConnected(String name, String address) {
-                // Do something when successfully connected
                 Timber.d("Connected! " + name + " " + address);
                 bluetoothSPP.send("a", true);
-
             }
 
             public void onDeviceDisconnected() {
-                // Do something when connection was disconnected
                 drivingInformation.saveLocationBike();
                 Timber.d("Bluetooth device disconnected!");
             }
 
             public void onDeviceConnectionFailed() {
-                // Do something when connection failed
+                drivingInformation.saveLocationBike();
                 Timber.d("Bluetooth connection failed!");
             }
         });
     }
 
-    private void pairedDeviceListener() {
-        bluetoothSPP.setAutoConnectionListener(new BluetoothSPP.AutoConnectionListener() {
-            public void onNewConnection(String name, String address) {
-                // Do something when earching for new connection device
-                Timber.d("Connected " + name);
-            }
-
-            public void onAutoConnectionStarted() {
-                // Do something when auto connection has started
-                Timber.d("Reconnected");
-
-            }
+    private void setOndataReceivedListener() {
+        bluetoothSPP.setOnDataReceivedListener((data, message) -> {
+            Timber.d("Bluetooth data received: " + data.toString() + " " + message);
         });
     }
 
-    private void setOndataReceivedListener() {
-
-    }
-
     public void sendData(String device, int value) {
+        bluetoothSPP.send(device + Integer.toString(value), true);
+        Timber.d("Bluetooth data send: " + device + Integer.toString(value));
     }
 }
