@@ -141,6 +141,7 @@ public class MapsActivity extends AppCompatActivity {
 
     public void routeCalculatedCallback() {
         fabButton.setVisibility(View.VISIBLE);
+        hideBlinkers();
     }
 
     public void startNavigationCallback() {

@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.widget.Toast;
 
-import java.util.Arrays;
-
 import aarhusuniversitet.brightcycle.Controller.DrivingInformation;
 import aarhusuniversitet.brightcycle.Domain.BlueteethDevice;
 import app.akexorcist.bluetotohspp.library.BluetoothSPP;
@@ -74,11 +72,15 @@ public class BluetoothConnection {
             }
 
             public void onDeviceDisconnected() {
-                drivingInformation.saveLocationBike();
-                bluetoothDevice = null;
                 Timber.d("Bluetooth device disconnected...");
                 Toast.makeText(activity, "Bluetooth device disconnected...",
                         Toast.LENGTH_LONG).show();
+
+                drivingInformation.saveLocationBike();
+                bluetoothDevice = null;
+
+                Intent intent = new Intent(activity, MainActivity.class);
+                activity.startActivity(intent);
             }
 
             public void onDeviceConnectionFailed() {

@@ -66,12 +66,11 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this.getApplicationContext(), "Bluetooth is not available on your device.", Toast.LENGTH_LONG).show();
         }
 
-        if (!bluetoothConnection.isConnected()) {
-            btnConnectBluetooth.setVisibility(View.VISIBLE);
-        } else {
+        if (bluetoothConnection.isConnected()) {
             Intent intent = new Intent(this, MapsActivity.class);
             startActivity(intent);
         }
+
     }
 
 
@@ -99,13 +98,13 @@ public class MainActivity extends AppCompatActivity {
     // Get fired when the user picks a bluetooth connection to connect with.
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == BluetoothState.REQUEST_CONNECT_DEVICE) {
-            if (resultCode == Activity.RESULT_OK)
+            if (resultCode == Activity.RESULT_OK) {
+                Toast.makeText(this, "Connecting...", Toast.LENGTH_LONG).show();
                 bluetoothConnection.setupBluetoothConnection();
-            bluetoothConnection.connect(data);
+                bluetoothConnection.connect(data);
+            }
         } else if (requestCode == BluetoothState.REQUEST_ENABLE_BT) {
             if (resultCode == Activity.RESULT_OK) {
-                btnConnectBluetooth.setVisibility(View.GONE);
-                bluetoothConnection.setupBluetoothConnection();
             } else {
                 // Do something if user doesn't choose any device (Pressed back)
                 Toast.makeText(this.getApplicationContext(), "No device chosen.", Toast.LENGTH_LONG).show();
@@ -130,8 +129,6 @@ public class MainActivity extends AppCompatActivity {
             requestBluetoothPermission();
         } else {
             askUserToChooseBluetoothConnection();
-            btnConnectBluetooth.setText("Connecting...");
-            btnConnectBluetooth.setEnabled(false);
         }
     }
 
