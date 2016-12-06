@@ -67,10 +67,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // TODO Add line when bluetooth has to be enabled again.
-        //btnConnectBluetooth.setVisibility(View.VISIBLE);
+        btnConnectBluetooth.setVisibility(View.VISIBLE);
 
-        Intent intent = new Intent(this, MapsActivity.class);
-        startActivity(intent);
+        // Intent intent = new Intent(this, MapsActivity.class);
+        // startActivity(intent);
     }
 
 
