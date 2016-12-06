@@ -2,6 +2,9 @@ package aarhusuniversitet.brightcycle;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.widget.Toast;
+
+import java.util.Arrays;
 
 import aarhusuniversitet.brightcycle.Controller.DrivingInformation;
 import aarhusuniversitet.brightcycle.Domain.BlueteethDevice;
@@ -39,8 +42,8 @@ public class BluetoothConnection {
         return bluetoothSPP.isBluetoothEnabled();
     }
 
-    public boolean isConnected(){
-        return bluetoothDevice == null;
+    public boolean isConnected() {
+        return bluetoothDevice != null;
     }
 
     public void connect(Intent data) {
@@ -56,6 +59,7 @@ public class BluetoothConnection {
         bluetoothSPP.startService(BluetoothState.DEVICE_OTHER);
         setOndataReceivedListener();
         setConnectionListener();
+        setStateListener();
     }
 
     private void setConnectionListener() {
@@ -72,18 +76,42 @@ public class BluetoothConnection {
             public void onDeviceDisconnected() {
                 drivingInformation.saveLocationBike();
                 bluetoothDevice = null;
-                Timber.d("Bluetooth device disconnected!");
+                Timber.d("Bluetooth device disconnected...");
+                Toast.makeText(activity, "Bluetooth device disconnected...",
+                        Toast.LENGTH_LONG).show();
             }
 
             public void onDeviceConnectionFailed() {
                 Timber.d("Bluetooth connection failed!");
+                Toast.makeText(activity, "Bluetooth connection failed...",
+                        Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void setStateListener() {
+        bluetoothSPP.setBluetoothStateListener((BluetoothSPP.BluetoothStateListener) state -> {
+            if (state == BluetoothState.STATE_CONNECTED) {
+                Timber.d("Bluetooth state: connected");
+            } else if (state == BluetoothState.STATE_CONNECTING) {
+                Timber.d("Bluetooth state: connecting...");
+            } else if (state == BluetoothState.STATE_LISTEN) {
+                Timber.d("Bluetooth state: listening");
+                if (isConnected()) {
+                    disconnect();
+                }
+            } else if (state == BluetoothState.STATE_NONE) {
+                Timber.d("Bluetooth state: none");
+                if (isConnected()) {
+                    disconnect();
+                }
             }
         });
     }
 
     private void setOndataReceivedListener() {
         bluetoothSPP.setOnDataReceivedListener((data, message) -> {
-            Timber.d("Bluetooth data received: " + data.toString() + " " + message);
+            Timber.d("Bluetooth data received: " + message);
         });
     }
 
