@@ -44,8 +44,8 @@ public class DrivingInformation {
     }
 
     public void saveLocationBike() {
-        // TODO add persistence/database activeAndroid
         savedBikeLocation = currentLocation;
+        savedBikeLocation.save();
     }
 
     public void turnOffLights() {

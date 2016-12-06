@@ -1,18 +1,34 @@
 package aarhusuniversitet.brightcycle.Domain;
 
+import com.activeandroid.Model;
+import com.activeandroid.annotation.Column;
+import com.activeandroid.annotation.Table;
+import com.activeandroid.query.Select;
 import com.here.android.mpa.common.GeoCoordinate;
 
-public class GeoLocation {
+@Table(name = "SavedLocations")
+public class GeoLocation extends Model {
+
+    @Column(name = "Address")
     private String address;
-    private double longitude, latitude;
+    @Column(name = "Latitude")
+    public double latitude;
+    @Column(name = "Longitude")
+    public double longitude;
 
     public GeoLocation(double latitude, double longitude) {
+        super();
         this.longitude = longitude;
         this.latitude = latitude;
     }
 
     public GeoLocation() {
+        super();
+    }
 
+    // Database call
+    public static GeoLocation getLastLocation() {
+        return new Select().from(GeoLocation.class).executeSingle();
     }
 
     public GeoLocation(GeoCoordinate geoCoordinate) {

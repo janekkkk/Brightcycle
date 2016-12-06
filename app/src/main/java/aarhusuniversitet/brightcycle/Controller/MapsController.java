@@ -1,16 +1,19 @@
 package aarhusuniversitet.brightcycle.Controller;
 
+import android.graphics.BitmapFactory;
 import android.view.View;
 import android.widget.Toast;
 
 import com.here.android.mpa.common.GeoBoundingBox;
 import com.here.android.mpa.common.GeoCoordinate;
 import com.here.android.mpa.common.GeoPosition;
+import com.here.android.mpa.common.Image;
 import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.common.PositioningManager;
 import com.here.android.mpa.guidance.NavigationManager;
 import com.here.android.mpa.mapping.Map;
 import com.here.android.mpa.mapping.MapFragment;
+import com.here.android.mpa.mapping.MapMarker;
 import com.here.android.mpa.mapping.MapRoute;
 import com.here.android.mpa.routing.CoreRouter;
 import com.here.android.mpa.routing.Maneuver;
@@ -161,6 +164,17 @@ public class MapsController {
         } else {
             Timber.d("Navigation starting error...");
         }
+    }
+
+    public void showBikeLocation() {
+        if(drivingInformation.savedBikeLocation != null){
+
+        }
+        Image image = new Image();
+        image.setBitmap(BitmapFactory.decodeResource(mapsActivity.getResources(), R.drawable.ic_directions_bike));
+//        map.addMapObject(new MapMarker(drivingInformation.savedBikeLocation.getCoordinate(), image));
+        map.addMapObject(new MapMarker(drivingInformation.mockLocation.getCoordinate(), image));
+
     }
 
     private class RouteListener implements CoreRouter.Listener {

@@ -37,6 +37,7 @@ import java.util.List;
 import aarhusuniversitet.brightcycle.Controller.DrivingInformation;
 import aarhusuniversitet.brightcycle.Controller.MapsController;
 import aarhusuniversitet.brightcycle.Domain.Emergency;
+import aarhusuniversitet.brightcycle.Domain.GeoLocation;
 import br.com.mauker.materialsearchview.MaterialSearchView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -137,6 +138,7 @@ public class MapsActivity extends AppCompatActivity {
 
     public void initMapCallback() {
         drivingInformation = DrivingInformation.getInstance(this, BluetoothConnection.getInstance(this));
+        mapsController.showBikeLocation(); // TODO debug
     }
 
     public void routeCalculatedCallback() {
@@ -298,6 +300,10 @@ public class MapsActivity extends AppCompatActivity {
                             Intent intent = new Intent(MapsActivity.this, SettingActivity.class);
                             startActivity(intent);
                             break;
+                        case 5:
+                            drivingInformation.savedBikeLocation = GeoLocation.getLastLocation();
+                            mapsController.showBikeLocation();
+                            break;
                     }
                     return false;
                 })
@@ -371,11 +377,13 @@ public class MapsActivity extends AppCompatActivity {
     @OnClick(R.id.btnBlinkerLeft)
     public void buttonBlinkerLeftClicked(View button) {
         Timber.d("Left button pressed");
+        drivingInformation.startBlinking("left");
     }
 
     @OnClick(R.id.btnBlinkerRight)
     public void buttonBlinkerRightClicked(View button) {
         Timber.d("Right button pressed");
+        drivingInformation.startBlinking("right");
     }
 
     @OnClick(R.id.fabButton)

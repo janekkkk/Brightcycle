@@ -62,17 +62,20 @@ public class MainActivity extends AppCompatActivity {
 
         checkPermissions();
 
+        // TODO remove
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
+
         if (!bluetoothConnection.isBluetoothAvailable()) {
             Toast.makeText(this.getApplicationContext(), "Bluetooth is not available on your device.", Toast.LENGTH_LONG).show();
         }
 
         if (bluetoothConnection.isConnected()) {
-            Intent intent = new Intent(this, MapsActivity.class);
-            startActivity(intent);
+            Intent mapsActivity = new Intent(this, MapsActivity.class);
+            startActivity(mapsActivity);
         }
 
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
