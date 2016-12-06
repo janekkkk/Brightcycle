@@ -65,7 +65,7 @@ public class MapsController {
                 map.getPositionIndicator().setVisible(true);
 
                 // Set the map center to the Aarhus region
-                map.setCenter(drivingInformation.mockLocation,
+                map.setCenter(drivingInformation.mockLocation.getCoordinate(),
                         Map.Animation.NONE);
 
                 // Set the zoom level to the average between min and max
@@ -153,6 +153,7 @@ public class MapsController {
                 map.setZoomLevel(map.getMaxZoomLevel());
                 navigationManager
                         .setNaturalGuidanceMode(EnumSet.of(NavigationManager.NaturalGuidanceMode.JUNCTION));
+                mapsActivity.startNavigationCallback();
             } else {
                 Timber.d("Navigation starting error: " + error);
                 navigationManager.setMap(null);

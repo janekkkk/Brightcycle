@@ -33,17 +33,14 @@ public class SettingActivity extends AppCompatActivity {
 
         manuellBright.setEnabled(false);
 
-        bluetoothConnection = BluetoothConnection.getInstance(getApplicationContext());
+        bluetoothConnection = BluetoothConnection.getInstance(this);
         autoBright.setChecked(true);
-        autoBright.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    manuellBright.setEnabled(false);
-                    //TODO send microController the information that it change the brightness by itself
-                } else {
-                    manuellBright.setEnabled(true);
-                }
+        autoBright.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                manuellBright.setEnabled(false);
+                //TODO send microController the information that it change the brightness by itself
+            } else {
+                manuellBright.setEnabled(true);
             }
         });
 

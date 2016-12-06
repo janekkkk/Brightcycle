@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import aarhusuniversitet.brightcycle.Controller.DrivingInformation;
 import app.akexorcist.bluetotohspp.library.BluetoothState;
 import app.akexorcist.bluetotohspp.library.DeviceList;
 import butterknife.BindView;
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     RelativeLayout contentMain;
 
     BluetoothConnection bluetoothConnection;
+    DrivingInformation drivingInformation;
 
     private final static int REQUEST_CODE_ASK_PERMISSIONS = 1;
     private static final String[] REQUIRED_SDK_PERMISSIONS = new String[]{
@@ -50,7 +52,8 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         Timber.plant(new Timber.DebugTree());
         setSupportActionBar(toolbar);
-        bluetoothConnection = BluetoothConnection.getInstance(this.getApplicationContext());
+        bluetoothConnection = BluetoothConnection.getInstance(this);
+        drivingInformation = DrivingInformation.getInstance(this, bluetoothConnection);
     }
 
     @Override

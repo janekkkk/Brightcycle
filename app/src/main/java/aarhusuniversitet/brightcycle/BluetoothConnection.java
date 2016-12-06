@@ -27,7 +27,7 @@ public class BluetoothConnection {
     public BluetoothConnection(Activity activity) {
         this.activity = activity;
         bluetoothSPP = new BluetoothSPP(activity);
-        drivingInformation = DrivingInformation.getInstance(activity, BluetoothConnection.getInstance(activity));
+        drivingInformation = DrivingInformation.getInstance(activity, this);
     }
 
     public boolean isBluetoothAvailable() {

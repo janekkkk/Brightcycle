@@ -1,8 +1,11 @@
 package aarhusuniversitet.brightcycle;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.speech.RecognizerIntent;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -10,6 +13,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.here.android.mpa.common.PositioningManager;
@@ -46,8 +51,15 @@ public class MapsActivity extends AppCompatActivity {
     MaterialSearchView searchView;
     @BindView(R.id.fabButton)
     ActionButton fabButton;
+    @BindView(R.id.btnBlinkerLeft)
+    Button btnBlinkerLeft;
+    @BindView(R.id.btnBlinkerRight)
+    Button btnBlinkerRight;
 
     public boolean appPaused;
+    @BindView(R.id.buttonLayout)
+    LinearLayout buttonLayout;
+
     private MapsController mapsController;
     private DrivingInformation drivingInformation;
 
@@ -68,6 +80,7 @@ public class MapsActivity extends AppCompatActivity {
         createAppDrawer();
         createSearchSuggestionsOnTextChange();
         initFabButton();
+        hideBlinkers();
     }
 
     public void onResume() {
@@ -114,18 +127,17 @@ public class MapsActivity extends AppCompatActivity {
 
     // ------------- Navigation and routing -------------
 
-    public void initMapCallback(){
+    public void initMapCallback() {
         drivingInformation = DrivingInformation.getInstance(this, BluetoothConnection.getInstance(this));
+        showBlinkers();
     }
 
-    public void routeCalculatedCallback(){
+    public void routeCalculatedCallback() {
         fabButton.setVisibility(View.VISIBLE);
     }
 
-    @OnClick(R.id.fabButton)
-    public void fabButtonClicked(View fabButton) {
-        mapsController.startNavigation(fabButton);
-
+    public void startNavigationCallback() {
+        showBlinkers();
     }
 
     // ------------- Searching, geocoding, reverse geocoding -------------
@@ -321,4 +333,50 @@ public class MapsActivity extends AppCompatActivity {
         }
     }
 
+    private void hideBlinkers() {
+        btnBlinkerLeft.setVisibility(View.INVISIBLE);
+        btnBlinkerRight.setVisibility(View.INVISIBLE);
+    }
+
+    private void showBlinkers() {
+        btnBlinkerLeft.setVisibility(View.VISIBLE);
+        btnBlinkerRight.setVisibility(View.VISIBLE);
+        btnBlinkerLeft.setBackgroundColor(getApplicationContext().getColor(R.color.fab_material_amber_500));
+        btnBlinkerRight.setBackgroundColor(getApplicationContext().getColor(R.color.fab_material_amber_500));
+
+        btnBlinkerLeft.getBackground().setAlpha(64);  // 25% transparent
+        btnBlinkerRight.getBackground().setAlpha(64);  // 25% transparent
+
+        Snackbar.make(buttonLayout, "Use the left or right side of the screen to activate the blinkers", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
+        Handler handler = new Handler();
+        handler.postDelayed(() -> {
+            btnBlinkerRight.setBackgroundColor(Color.TRANSPARENT);
+            btnBlinkerRight.setText("");
+
+            btnBlinkerLeft.setBackgroundColor(Color.TRANSPARENT);
+            btnBlinkerLeft.setText("");
+        }, 10000);
+
+    }
+
+    @OnClick(R.id.btnBlinkerLeft)
+    public void buttonBlinkerLeftClicked(View button) {
+        Timber.d("Left button pressed");
+        Toast.makeText(getApplicationContext(), "Left button pressed",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    @OnClick(R.id.btnBlinkerRight)
+    public void buttonBlinkerRightClicked(View button) {
+        Timber.d("Right button pressed");
+        Toast.makeText(getApplicationContext(), "Right button pressed",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    @OnClick(R.id.fabButton)
+    public void fabButtonClicked(View fabButton) {
+        mapsController.startNavigation(fabButton);
+
+    }
 }

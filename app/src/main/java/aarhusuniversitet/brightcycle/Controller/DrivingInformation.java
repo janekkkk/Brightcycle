@@ -23,7 +23,7 @@ public class DrivingInformation {
     public Sensor accelerometer;
     public GeoLocation currentLocation;
     public GeoLocation savedBikeLocation;
-    public GeoCoordinate mockLocation;
+    public GeoLocation mockLocation;
 
     protected Activity activity;
     public ArrayList<Light> lights;
@@ -103,9 +103,9 @@ public class DrivingInformation {
     }
 
     private void initializeLocations() {
-        mockLocation = new GeoCoordinate(56.14703396, 10.20783076);
+        mockLocation = new GeoLocation(56.14703396, 10.20783076);
         savedBikeLocation = new GeoLocation();
-        currentLocation = new GeoLocation(mockLocation);
+        currentLocation = mockLocation;
     }
 
     private void initializeSensors() {
