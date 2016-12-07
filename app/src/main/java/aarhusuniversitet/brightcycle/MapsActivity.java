@@ -1,7 +1,12 @@
 package aarhusuniversitet.brightcycle;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.RecognizerIntent;
@@ -36,6 +41,7 @@ import java.util.List;
 
 import aarhusuniversitet.brightcycle.Controller.DrivingInformation;
 import aarhusuniversitet.brightcycle.Controller.MapsController;
+import aarhusuniversitet.brightcycle.Domain.Accelerometer;
 import aarhusuniversitet.brightcycle.Domain.Emergency;
 import aarhusuniversitet.brightcycle.Domain.GeoLocation;
 import br.com.mauker.materialsearchview.MaterialSearchView;
@@ -61,6 +67,8 @@ public class MapsActivity extends AppCompatActivity {
     @BindView(R.id.buttonLayout)
     LinearLayout buttonLayout;
 
+    private SensorManager mSensorManager;
+    private Sensor accelerometerSensor;
     private MapsController mapsController;
     private DrivingInformation drivingInformation;
     private BluetoothConnection bluetoothConnection;
@@ -89,7 +97,15 @@ public class MapsActivity extends AppCompatActivity {
         createSearchSuggestionsOnTextChange();
         initFabButton();
         hideBlinkers();
+    }
 
+    private void initializeAccelerometer() {
+        // Get sensor manager
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        // Get the default sensor of specified type
+        accelerometerSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mSensorManager.registerListener(((Accelerometer)drivingInformation.accelerometer).accelerometerSensorListener, accelerometerSensor,
+                SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     public void onResume() {
@@ -112,6 +128,11 @@ public class MapsActivity extends AppCompatActivity {
 
             // Notify navigation listener to update the maneuver billboard and show waypointer
             mapsController.navigationNewInstructionListener.onNewInstructionEvent();
+
+            if (accelerometerSensor != null) {
+                mSensorManager.registerListener(((Accelerometer)drivingInformation.accelerometer).accelerometerSensorListener, accelerometerSensor,
+                        SensorManager.SENSOR_DELAY_NORMAL);
+            }
         }
     }
 
@@ -121,6 +142,11 @@ public class MapsActivity extends AppCompatActivity {
             mapsController.positioningManager.stop();
         }
         mapsController.detachNavigationListeners();
+
+        if (accelerometerSensor != null) {
+            mSensorManager.unregisterListener(((Accelerometer)drivingInformation.accelerometer).accelerometerSensorListener);
+        }
+
         super.onPause();
         appPaused = true;
     }
@@ -138,6 +164,7 @@ public class MapsActivity extends AppCompatActivity {
 
     public void initMapCallback() {
         drivingInformation = DrivingInformation.getInstance(this, BluetoothConnection.getInstance(this));
+        initializeAccelerometer();
     }
 
     public void routeCalculatedCallback() {

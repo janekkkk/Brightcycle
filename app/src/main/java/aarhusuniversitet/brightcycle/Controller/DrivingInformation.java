@@ -1,6 +1,9 @@
 package aarhusuniversitet.brightcycle.Controller;
 
 import android.app.Activity;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 
 import java.util.ArrayList;
 
@@ -12,6 +15,7 @@ import aarhusuniversitet.brightcycle.Domain.GeoLocation;
 import aarhusuniversitet.brightcycle.Domain.Light;
 import aarhusuniversitet.brightcycle.Domain.LightSensor;
 import aarhusuniversitet.brightcycle.Domain.Sensor;
+import timber.log.Timber;
 
 public class DrivingInformation {
 
@@ -132,4 +136,5 @@ public class DrivingInformation {
         lights.add(rightBlinker);
         lights.add(backLight);
     }
+
 }
