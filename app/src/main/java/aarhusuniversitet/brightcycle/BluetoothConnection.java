@@ -117,8 +117,10 @@ public class BluetoothConnection {
         });
     }
 
-    public void sendData(String device, int value) {
-        bluetoothSPP.send(device + Integer.toString(value), true);
-        Timber.d("Bluetooth data send: " + device + Integer.toString(value));
+    public void sendData(String device) {
+        if (bluetoothDevice != null) {
+            bluetoothSPP.send(device, true);
+            Timber.d("Bluetooth data send: " + device);
+        }
     }
 }

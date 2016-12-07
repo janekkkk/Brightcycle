@@ -167,14 +167,16 @@ public class MapsController {
     }
 
     public void showBikeLocation() {
-        if(drivingInformation.savedBikeLocation != null){
-
+        if (drivingInformation.savedBikeLocation != null) {
+            Image image = new Image();
+            image.setBitmap(BitmapFactory.decodeResource(mapsActivity.getResources(), R.drawable.ic_directions_bike));
+            map.addMapObject(new MapMarker(drivingInformation.savedBikeLocation.getCoordinate(), image));
+            map.setCenter(drivingInformation.savedBikeLocation.getCoordinate(), Map.Animation.BOW);
+            map.setZoomLevel((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
+        } else {
+            Toast.makeText(mapsActivity.getApplicationContext(), "You haven't saved the bike's location yet!",
+                    Toast.LENGTH_SHORT).show();
         }
-        Image image = new Image();
-        image.setBitmap(BitmapFactory.decodeResource(mapsActivity.getResources(), R.drawable.ic_directions_bike));
-//        map.addMapObject(new MapMarker(drivingInformation.savedBikeLocation.getCoordinate(), image));
-        map.addMapObject(new MapMarker(drivingInformation.mockLocation.getCoordinate(), image));
-
     }
 
     private class RouteListener implements CoreRouter.Listener {

@@ -2,8 +2,6 @@ package aarhusuniversitet.brightcycle.Controller;
 
 import android.app.Activity;
 
-import com.here.android.mpa.common.GeoCoordinate;
-
 import java.util.ArrayList;
 
 import aarhusuniversitet.brightcycle.BluetoothConnection;
@@ -30,6 +28,12 @@ public class DrivingInformation {
     protected BluetoothConnection bluetoothConnection;
     private static DrivingInformation instance;
 
+    private final String LEFT_BLINKER = "l";
+    private final String RIGHT_BLINKER = "r";
+    private final String BACK_LIGHT_BRAKE = "s";
+    private final String BACK_LIGHT_AUTOMATIC = "a";
+    private final String BACK_LIGHT_MANUAL = "m";
+
     public DrivingInformation(Activity activity, BluetoothConnection bluetoothConnection) {
         this.activity = activity;
         this.bluetoothConnection = bluetoothConnection;
@@ -51,37 +55,42 @@ public class DrivingInformation {
     public void turnOffLights() {
         for (Light light :
                 lights) {
-            light.turnOff();
+            if (light instanceof BackLight) {
+                light.turnOff();
+            }
         }
 
-        bluetoothConnection.sendData("allLights", 0);
+        bluetoothConnection.sendData(BACK_LIGHT_MANUAL + Integer.toString(100));
     }
 
     public void turnOnLights() {
         for (Light light :
                 lights) {
-            light.turnOn();
+            if (light instanceof BackLight) {
+                light.turnOn();
+            }
         }
 
-        bluetoothConnection.sendData("allLights", 100);
+        bluetoothConnection.sendData(BACK_LIGHT_MANUAL + Integer.toString(0));
     }
 
     public void setBrightnessLights(int brightness) {
         for (Light light :
                 lights) {
-            light.setBrightness(brightness);
+            if (light instanceof BackLight) {
+                light.setBrightness(brightness);
+            }
         }
 
-        bluetoothConnection.sendData("allLights", brightness);
+        bluetoothConnection.sendData(BACK_LIGHT_MANUAL + Integer.toString(brightness));
     }
 
     public void startBlinking(String direction) {
-        if (direction.equals("right")) {
+        if (direction.equals(RIGHT_BLINKER)) {
             ((Blinker) rightBlinker).blink();
-        }
-        else ((Blinker) leftBlinker).blink();
+        } else ((Blinker) leftBlinker).blink();
 
-        bluetoothConnection.sendData(direction, 1);
+        bluetoothConnection.sendData(direction);
     }
 
     public void stopBlinking(String direction) {
@@ -90,9 +99,9 @@ public class DrivingInformation {
                     lights) {
                 if (light instanceof Blinker && ((Blinker) light).blinking) {
                     ((Blinker) light).stopBlink();
-                    bluetoothConnection.sendData(direction, 0);
                 }
             }
+            bluetoothConnection.sendData(direction);
         }
     }
 

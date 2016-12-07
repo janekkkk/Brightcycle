@@ -138,7 +138,6 @@ public class MapsActivity extends AppCompatActivity {
 
     public void initMapCallback() {
         drivingInformation = DrivingInformation.getInstance(this, BluetoothConnection.getInstance(this));
-        mapsController.showBikeLocation(); // TODO debug
     }
 
     public void routeCalculatedCallback() {
@@ -179,25 +178,22 @@ public class MapsActivity extends AppCompatActivity {
     class SuggestionQueryListener implements ResultListener<List<String>> {
         @Override
         public void onCompleted(List<String> data, ErrorCode error) {
-            if (error != ErrorCode.NONE) {
-                // TODO Handle error
-            } else {
+            if (error == ErrorCode.NONE) {
                 searchView.addSuggestions(data);
+            } else {
+                Toast.makeText(getApplicationContext(),
+                        "Error getting suggestions: " + error, Toast.LENGTH_LONG).show();
             }
         }
     }
 
     private void getSearchSuggestions(String term) {
         try {
-            TextSuggestionRequest request = null;
+            TextSuggestionRequest request;
             request = new TextSuggestionRequest(term).setSearchCenter(mapsController.map.getCenter());
-
-            if (request.execute(new SuggestionQueryListener()) !=
-                    ErrorCode.NONE) {
-                // TODO Handle request error
-            }
+            request.execute(new SuggestionQueryListener());
         } catch (IllegalArgumentException ex) {
-            // TODO Handle invalid create search request parameters
+            Timber.d("Illegal argument: " + ex);
         }
     }
 
@@ -227,7 +223,7 @@ public class MapsActivity extends AppCompatActivity {
         // Do something when the suggestion list is clicked.
         searchView.setOnItemClickListener((parent, view, position, id) -> {
             String suggestion = searchView.getSuggestionAtPosition(position);
-            searchView.setQuery(suggestion, false);
+            searchView.setQuery(suggestion, true);
             searchView.closeSearch();
             // Request the coordinates of the suggestion clicked on.
             getCoordinates(suggestion);
@@ -377,13 +373,13 @@ public class MapsActivity extends AppCompatActivity {
     @OnClick(R.id.btnBlinkerLeft)
     public void buttonBlinkerLeftClicked(View button) {
         Timber.d("Left button pressed");
-        drivingInformation.startBlinking("left");
+        drivingInformation.startBlinking("l");
     }
 
     @OnClick(R.id.btnBlinkerRight)
     public void buttonBlinkerRightClicked(View button) {
         Timber.d("Right button pressed");
-        drivingInformation.startBlinking("right");
+        drivingInformation.startBlinking("r");
     }
 
     @OnClick(R.id.fabButton)
