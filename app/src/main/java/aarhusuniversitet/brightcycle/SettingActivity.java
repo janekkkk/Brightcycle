@@ -1,27 +1,27 @@
 package aarhusuniversitet.brightcycle;
 
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class SettingActivity extends AppCompatActivity {
 
     @BindView(R.id.autoBright)
     Switch autoBright;
     @BindView(R.id.manuellBright)
-    SeekBar manuellBright;
+    SeekBar manualBrightness;
     @BindView(R.id.btnDisconnect)
     Button disconnect;
     BluetoothConnection bluetoothConnection;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,25 +29,22 @@ public class SettingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_setting);
 
         ButterKnife.bind(this);
-        disconnect.setOnClickListener(detach);
 
-        manuellBright.setEnabled(false);
+        manualBrightness.setEnabled(false);
 
-        bluetoothConnection = BluetoothConnection.getInstance(getApplicationContext());
+        bluetoothConnection = BluetoothConnection.getInstance(this);
+
         autoBright.setChecked(true);
-        autoBright.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    manuellBright.setEnabled(false);
-                    //TODO send microController the information that it change the brightness by itself
-                } else {
-                    manuellBright.setEnabled(true);
-                }
+        autoBright.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                manualBrightness.setEnabled(false);
+                //TODO send microController the information that it change the brightness by itself
+            } else {
+                manualBrightness.setEnabled(true);
             }
         });
 
-        manuellBright.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        manualBrightness.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressChanged = 0;
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -66,10 +63,9 @@ public class SettingActivity extends AppCompatActivity {
 
     }
 
-    View.OnClickListener detach = new View.OnClickListener() {
-        public void onClick(View v) {
-            // TODO disconnect the Bluetooth connection
-            bluetoothConnection.disconnect();
-        }
-    };
+    @OnClick(R.id.btnDisconnect)
+    public void disconnectButtonClicked(View button) {
+        bluetoothConnection.disconnect();
+    }
+
 }

@@ -1,18 +1,21 @@
-package aarhusuniversitet.brightcycle;
+package aarhusuniversitet.brightcycle.Controller;
 
 import android.app.Activity;
-
-import com.here.android.mpa.common.GeoCoordinate;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 
 import java.util.ArrayList;
 
-import aarhusuniversitet.brightcycle.Models.Accelerometer;
-import aarhusuniversitet.brightcycle.Models.BackLight;
-import aarhusuniversitet.brightcycle.Models.Blinker;
-import aarhusuniversitet.brightcycle.Models.GeoLocation;
-import aarhusuniversitet.brightcycle.Models.Light;
-import aarhusuniversitet.brightcycle.Models.LightSensor;
-import aarhusuniversitet.brightcycle.Models.Sensor;
+import aarhusuniversitet.brightcycle.BluetoothConnection;
+import aarhusuniversitet.brightcycle.Domain.Accelerometer;
+import aarhusuniversitet.brightcycle.Domain.BackLight;
+import aarhusuniversitet.brightcycle.Domain.Blinker;
+import aarhusuniversitet.brightcycle.Domain.GeoLocation;
+import aarhusuniversitet.brightcycle.Domain.Light;
+import aarhusuniversitet.brightcycle.Domain.LightSensor;
+import aarhusuniversitet.brightcycle.Domain.Sensor;
+import timber.log.Timber;
 
 public class DrivingInformation {
 
@@ -22,13 +25,18 @@ public class DrivingInformation {
     public Sensor accelerometer;
     public GeoLocation currentLocation;
     public GeoLocation savedBikeLocation;
-    public ArrayList<GeoLocation> savedLocations;
-    public GeoCoordinate mockLocation;
+    public GeoLocation mockLocation;
 
     protected Activity activity;
     public ArrayList<Light> lights;
     protected BluetoothConnection bluetoothConnection;
-    private static DrivingInformation drivingInformation;
+    private static DrivingInformation instance;
+
+    private final String LEFT_BLINKER = "l";
+    private final String RIGHT_BLINKER = "r";
+    private final String BACK_LIGHT_BRAKE = "s";
+    private final String BACK_LIGHT_AUTOMATIC = "a";
+    private final String BACK_LIGHT_MANUAL = "m";
 
     public DrivingInformation(Activity activity, BluetoothConnection bluetoothConnection) {
         this.activity = activity;
@@ -37,59 +45,67 @@ public class DrivingInformation {
     }
 
     public static DrivingInformation getInstance(Activity activity, BluetoothConnection bluetoothConnection) {
-        if (drivingInformation == null) {
-            drivingInformation = new DrivingInformation(activity, bluetoothConnection);
-            return drivingInformation;
-        } else {
-            return drivingInformation;
+        if (instance == null) {
+            instance = new DrivingInformation(activity, bluetoothConnection);
         }
+        return instance;
+    }
+
+    public void saveLocationBike() {
+        savedBikeLocation = currentLocation;
+        savedBikeLocation.save();
     }
 
     public void turnOffLights() {
         for (Light light :
                 lights) {
-            light.turnOff();
+            if (light instanceof BackLight) {
+                light.turnOff();
+            }
         }
 
-        bluetoothConnection.sendData("allLights", 0);
+        bluetoothConnection.sendData(BACK_LIGHT_MANUAL + Integer.toString(100));
     }
 
     public void turnOnLights() {
         for (Light light :
                 lights) {
-            light.turnOn();
+            if (light instanceof BackLight) {
+                light.turnOn();
+            }
         }
 
-        bluetoothConnection.sendData("allLights", 100);
+        bluetoothConnection.sendData(BACK_LIGHT_MANUAL + Integer.toString(0));
     }
 
     public void setBrightnessLights(int brightness) {
         for (Light light :
                 lights) {
-            light.setBrightness(brightness);
+            if (light instanceof BackLight) {
+                light.setBrightness(brightness);
+            }
         }
 
-        bluetoothConnection.sendData("allLights", brightness);
+        bluetoothConnection.sendData(BACK_LIGHT_MANUAL + Integer.toString(brightness));
     }
 
     public void startBlinking(String direction) {
-        if (direction.equals("right")) {
+        if (direction.equals(RIGHT_BLINKER)) {
             ((Blinker) rightBlinker).blink();
-        }
-        else ((Blinker) leftBlinker).blink();
+        } else ((Blinker) leftBlinker).blink();
 
-        bluetoothConnection.sendData(direction, 1);
+        bluetoothConnection.sendData(direction);
     }
 
-    public void stopBlinking() {
+    public void stopBlinking(String direction) {
         if (((Accelerometer) accelerometer).isOutOfTurn()) {
             for (Light light :
                     lights) {
                 if (light instanceof Blinker && ((Blinker) light).blinking) {
                     ((Blinker) light).stopBlink();
-                    bluetoothConnection.sendData("rightBlinker", 1);
                 }
             }
+            bluetoothConnection.sendData(direction);
         }
     }
 
@@ -100,10 +116,9 @@ public class DrivingInformation {
     }
 
     private void initializeLocations() {
-        savedLocations = new ArrayList<>();
-        mockLocation = new GeoCoordinate(56.14703396, 10.20783076);
+        mockLocation = new GeoLocation(56.14703396, 10.20783076);
         savedBikeLocation = new GeoLocation();
-        currentLocation = new GeoLocation(mockLocation);
+        currentLocation = mockLocation;
     }
 
     private void initializeSensors() {
@@ -121,4 +136,5 @@ public class DrivingInformation {
         lights.add(rightBlinker);
         lights.add(backLight);
     }
+
 }

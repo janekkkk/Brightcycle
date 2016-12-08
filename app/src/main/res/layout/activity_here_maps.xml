@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="aarhusuniversitet.brightcycle.HereMapsActivity">
+    tools:context="aarhusuniversitet.brightcycle.MapsActivity">
 
     <include layout="@layout/content_here_maps" />
 
@@ -28,6 +28,30 @@
             android:layout_marginRight="@dimen/fab_margin"
             android:layout_marginBottom="@dimen/fab_margin"
             android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/buttonLayout"
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:layout_marginTop="56dp">
+
+            <Button
+                android:id="@+id/btnBlinkerLeft"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                style="@android:style/Widget.Material.Light.Button.Borderless"
+                android:text="Left" />
+
+            <Button
+                android:id="@+id/btnBlinkerRight"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:text="Right" />
+        </LinearLayout>
 
     </RelativeLayout>
 

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import aarhusuniversitet.brightcycle.Controller.DrivingInformation;
 import app.akexorcist.bluetotohspp.library.BluetoothState;
 import app.akexorcist.bluetotohspp.library.DeviceList;
 import butterknife.BindView;
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     RelativeLayout contentMain;
 
     BluetoothConnection bluetoothConnection;
+    DrivingInformation drivingInformation;
 
     private final static int REQUEST_CODE_ASK_PERMISSIONS = 1;
     private static final String[] REQUIRED_SDK_PERMISSIONS = new String[]{
@@ -50,7 +52,8 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         Timber.plant(new Timber.DebugTree());
         setSupportActionBar(toolbar);
-        bluetoothConnection = BluetoothConnection.getInstance(this.getApplicationContext());
+        bluetoothConnection = BluetoothConnection.getInstance(this);
+        drivingInformation = DrivingInformation.getInstance(this, bluetoothConnection);
     }
 
     @Override
@@ -59,17 +62,20 @@ public class MainActivity extends AppCompatActivity {
 
         checkPermissions();
 
+        // TODO remove
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
+
         if (!bluetoothConnection.isBluetoothAvailable()) {
             Toast.makeText(this.getApplicationContext(), "Bluetooth is not available on your device.", Toast.LENGTH_LONG).show();
         }
 
-        // TODO Add line when bluetooth has to be enabled again.
-        //btnConnectBluetooth.setVisibility(View.VISIBLE);
+        if (bluetoothConnection.isConnected()) {
+            Intent mapsActivity = new Intent(this, MapsActivity.class);
+            startActivity(mapsActivity);
+        }
 
-        Intent intent = new Intent(this, HereMapsActivity.class);
-        startActivity(intent);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -95,12 +101,13 @@ public class MainActivity extends AppCompatActivity {
     // Get fired when the user picks a bluetooth connection to connect with.
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == BluetoothState.REQUEST_CONNECT_DEVICE) {
-            if (resultCode == Activity.RESULT_OK)
+            if (resultCode == Activity.RESULT_OK) {
+                Toast.makeText(this, "Connecting...", Toast.LENGTH_LONG).show();
+                bluetoothConnection.setupBluetoothConnection();
                 bluetoothConnection.connect(data);
+            }
         } else if (requestCode == BluetoothState.REQUEST_ENABLE_BT) {
             if (resultCode == Activity.RESULT_OK) {
-                btnConnectBluetooth.setVisibility(View.GONE);
-                bluetoothConnection.setupBluetoothConnection();
             } else {
                 // Do something if user doesn't choose any device (Pressed back)
                 Toast.makeText(this.getApplicationContext(), "No device chosen.", Toast.LENGTH_LONG).show();
@@ -119,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.btn_connect_bluetooth)
-    public void connectBluetooth(View view) {
+    public void connectBluetoothButtonClicked(View view) {
         Timber.d("Bluetooth connect button pressed");
         if (!bluetoothConnection.isBluetoothEnabled()) {
             requestBluetoothPermission();

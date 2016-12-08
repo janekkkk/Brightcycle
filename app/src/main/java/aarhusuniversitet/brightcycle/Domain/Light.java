@@ -1,4 +1,4 @@
-package aarhusuniversitet.brightcycle.Models;
+package aarhusuniversitet.brightcycle.Domain;
 
 public class Light {
 
@@ -31,9 +31,7 @@ public class Light {
     }
 
     public void setBrightness(int brightness) {
-        if (brightness <= MIN_LIGHT_VALUE) {
-            isOn = false;
-        } else isOn = true;
+        isOn = brightness > MIN_LIGHT_VALUE;
         this.brightness = brightness;
     }
 }
