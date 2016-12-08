@@ -122,7 +122,7 @@ public class BluetoothConnection {
      * Sends data to the microcontroller via Bluetooth
      *
      * @param device Device name
-     * @param value The value to send 
+     * @param value The value to send
      */
     public void sendData(String device, int value) {
         if (bluetoothDevice != null) {
