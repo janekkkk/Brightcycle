@@ -11,7 +11,7 @@ public class Accelerometer implements Sensor {
     private float mLastX;
     private float mLastY;
     private float mLastZ;
-    private final float NOISE = (float) 2.0;
+    private final float NOISE = (float) 2.0; //m/s^2
     private DrivingInformation drivingInformation;
 
     public Accelerometer(DrivingInformation drivingInformation){
@@ -52,13 +52,28 @@ public class Accelerometer implements Sensor {
             mLastY = y;
             mLastZ = z;
 
-            if ((deltaX > 2.5) ||(deltaX < -2.5)) {
+            //The user has to make a turn with an angle ca. 15° --> unit is m/s^2
+            /*if ((deltaX > 2.5) || (deltaX < -2.5)){
                 Timber.d("blinker off");
-            } /*else if (deltaY > deltaX) {
-                Timber.d("vertical movement");
-            } else {
             }*/
+            if (deltaX > 2.5) { //right turn
+                while (deltaX > -2.5) {
+                }
+                Timber.d("blinker off");
+            }
+            if (deltaX < -2.5) { //left turn
+                while (deltaX < 2.5) {
+                }
+                Timber.d("blinker off");
+            }
 
+            //Assumption: the user is breaking with a deceleration around 3m/s^2 --> thesis
+            /*if(deltaY < -2.5){ //phone mounted in an angle of 0°
+                Timber.d("stoplight on");
+            }*/
+            if((deltaY < -2.3) /*&& (deltaZ > 1.9)*/){//phone mounted in an angle of 40°
+                Timber.d("blinker off");              //is Z necessary? !NOISE!
+            }
         }
 
         @Override
