@@ -10,7 +10,7 @@ public class Accelerometer implements Sensor {
     private float mLastX;
     private float mLastY;
     private float mLastZ;
-    private final float NOISE = (float) 2.0;
+    private final float NOISE = (float) 2.0; //m/s^2
 
     @Override
     public int read() {
@@ -42,12 +42,12 @@ public class Accelerometer implements Sensor {
             mLastY = y;
             mLastZ = z;
 
-            if (deltaX > deltaY) {
-                Timber.d("horizontal movement");
-            } else if (deltaY > deltaX) {
+            if ((deltaX > 2.5) ||(deltaX < -2.5)) {
+                Timber.d("blinker off");
+            } /*else if (deltaY > deltaX) {
                 Timber.d("vertical movement");
             } else {
-            }
+            }*/
 
         }
 
