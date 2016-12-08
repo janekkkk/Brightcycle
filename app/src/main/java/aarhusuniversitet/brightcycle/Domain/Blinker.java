@@ -5,8 +5,8 @@ public class Blinker extends Light {
     public boolean blinking = false;
     public String direction;
 
-    public Blinker(Sensor accelerometer, Sensor lightSensor) {
-        super(accelerometer, lightSensor);
+    public Blinker(Sensor accelerometer) {
+        super(accelerometer);
     }
 
     public void blink(String direction) {

@@ -3,15 +3,11 @@ package aarhusuniversitet.brightcycle.Domain;
 public class Light {
 
     protected int brightness = 0;
-    protected final int MIN_LIGHT_VALUE = 0;
-    protected final int MAX_LIGHT_VALUE = 100;
     public boolean isOn = false;
     protected Sensor accelerometer;
-    protected Sensor lightSensor;
 
-    public Light(Sensor accelerometer, Sensor lightSensor) {
+    public Light(Sensor accelerometer) {
         this.accelerometer = accelerometer;
-        this.lightSensor = lightSensor;
     }
 
     public void toggle() {
@@ -31,7 +27,6 @@ public class Light {
     }
 
     public void setBrightness(int brightness) {
-        isOn = brightness > MIN_LIGHT_VALUE;
         this.brightness = brightness;
     }
 }
