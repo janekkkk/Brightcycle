@@ -57,7 +57,7 @@ public class DrivingInformation {
                 light.turnOff();
                 if (((BackLight) light).automaticLight) {
                     ((BackLight) light).automaticLight = false;
-                    bluetoothConnection.sendData(BACK_LIGHT_AUTOMATIC, 0);
+                    bluetoothConnection.sendData(BACK_LIGHT_AUTOMATIC);
                 } else {
                     bluetoothConnection.sendData(BACK_LIGHT_MANUAL, 0);
                 }
@@ -72,7 +72,7 @@ public class DrivingInformation {
                 light.turnOn();
 
                 ((BackLight) light).automaticLight = true;
-                bluetoothConnection.sendData(BACK_LIGHT_AUTOMATIC, 1);
+                bluetoothConnection.sendData(BACK_LIGHT_AUTOMATIC);
 
             }
         }
