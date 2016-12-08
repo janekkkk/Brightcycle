@@ -1,9 +1,6 @@
 package aarhusuniversitet.brightcycle.Controller;
 
 import android.app.Activity;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 
 import java.util.ArrayList;
 
@@ -13,9 +10,7 @@ import aarhusuniversitet.brightcycle.Domain.BackLight;
 import aarhusuniversitet.brightcycle.Domain.Blinker;
 import aarhusuniversitet.brightcycle.Domain.GeoLocation;
 import aarhusuniversitet.brightcycle.Domain.Light;
-import aarhusuniversitet.brightcycle.Domain.LightSensor;
 import aarhusuniversitet.brightcycle.Domain.Sensor;
-import timber.log.Timber;
 
 public class DrivingInformation {
 
@@ -34,7 +29,6 @@ public class DrivingInformation {
 
     private final String LEFT_BLINKER = "l";
     private final String RIGHT_BLINKER = "r";
-    private final String BACK_LIGHT_BRAKE = "s";
     private final String BACK_LIGHT_AUTOMATIC = "a";
     private final String BACK_LIGHT_MANUAL = "m";
 
@@ -57,56 +51,67 @@ public class DrivingInformation {
     }
 
     public void turnOffLights() {
-        for (Light light :
-                lights) {
+        for (Light light : lights) {
+
             if (light instanceof BackLight) {
                 light.turnOff();
+                if (((BackLight) light).automaticLight) {
+                    ((BackLight) light).automaticLight = false;
+                    bluetoothConnection.sendData(BACK_LIGHT_AUTOMATIC, 0);
+                } else {
+                    bluetoothConnection.sendData(BACK_LIGHT_MANUAL, 0);
+                }
             }
         }
-
-        bluetoothConnection.sendData(BACK_LIGHT_MANUAL + Integer.toString(100));
     }
 
-    public void turnOnLights() {
+    public void turnOnLightsAutomatically() {
         for (Light light :
                 lights) {
             if (light instanceof BackLight) {
                 light.turnOn();
+
+                ((BackLight) light).automaticLight = true;
+                bluetoothConnection.sendData(BACK_LIGHT_AUTOMATIC, 1);
+
             }
         }
-
-        bluetoothConnection.sendData(BACK_LIGHT_MANUAL + Integer.toString(0));
     }
 
     public void setBrightnessLights(int brightness) {
-        for (Light light :
-                lights) {
+        for (Light light : lights) {
             if (light instanceof BackLight) {
+
                 light.setBrightness(brightness);
             }
         }
 
-        bluetoothConnection.sendData(BACK_LIGHT_MANUAL + Integer.toString(brightness));
+        bluetoothConnection.sendData(BACK_LIGHT_MANUAL, brightness);
     }
 
     public void startBlinking(String direction) {
         if (direction.equals(RIGHT_BLINKER)) {
-            ((Blinker) rightBlinker).blink();
-        } else ((Blinker) leftBlinker).blink();
+            ((Blinker) rightBlinker).blink(direction);
+        } else ((Blinker) leftBlinker).blink(direction);
 
         bluetoothConnection.sendData(direction);
     }
 
-    public void stopBlinking(String direction) {
-        if (((Accelerometer) accelerometer).isOutOfTurn()) {
-            for (Light light :
-                    lights) {
-                if (light instanceof Blinker && ((Blinker) light).blinking) {
-                    ((Blinker) light).stopBlink();
-                }
+    public void stopBlinking() {
+        for (Light light : lights) {
+            if (light instanceof Blinker && ((Blinker) light).blinking) {
+                ((Blinker) light).stopBlink();
+                bluetoothConnection.sendData(((Blinker) light).direction);
             }
-            bluetoothConnection.sendData(direction);
         }
+    }
+
+    public void turnOnBrakeLights() {
+        setBrightnessLights(100);
+    }
+
+    public void turnOffBrakeLights() {
+        turnOffLights();
     }
 
     private void initialize() {
@@ -122,8 +127,7 @@ public class DrivingInformation {
     }
 
     private void initializeSensors() {
-        lightSensor = new LightSensor();
-        accelerometer = new Accelerometer();
+        accelerometer = new Accelerometer(this);
     }
 
     private void initializeLights() {

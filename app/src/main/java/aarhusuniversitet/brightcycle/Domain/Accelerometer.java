@@ -3,6 +3,7 @@ package aarhusuniversitet.brightcycle.Domain;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 
+import aarhusuniversitet.brightcycle.Controller.DrivingInformation;
 import timber.log.Timber;
 
 public class Accelerometer implements Sensor {
@@ -10,19 +11,28 @@ public class Accelerometer implements Sensor {
     private float mLastX;
     private float mLastY;
     private float mLastZ;
-    private final float NOISE = (float) 2.0; //m/s^2
+    private final float NOISE = (float) 2.0;
+    private DrivingInformation drivingInformation;
+
+    public Accelerometer(DrivingInformation drivingInformation){
+        this.drivingInformation = drivingInformation;
+    }
 
     @Override
     public int read() {
         return 0;
     }
 
-    public boolean isOutOfTurn(){
-        return false;
+    public void isOutOfTurn(){
+        drivingInformation.stopBlinking();
     }
 
-    public boolean isBreaking(){
-        return false;
+    public void isBraking(){
+        drivingInformation.turnOnBrakeLights();
+    }
+
+    public void stoppedBraking(){
+        drivingInformation.turnOffBrakeLights();
     }
 
     public SensorEventListener accelerometerSensorListener = new SensorEventListener() {
