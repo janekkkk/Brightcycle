@@ -1,14 +1,13 @@
 package aarhusuniversitet.brightcycle;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.Switch;
-import android.widget.Toast;
 
+import aarhusuniversitet.brightcycle.Controller.DrivingInformation;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -22,6 +21,7 @@ public class SettingActivity extends AppCompatActivity {
     @BindView(R.id.btnDisconnect)
     Button disconnect;
     BluetoothConnection bluetoothConnection;
+    DrivingInformation drivingInformation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,12 +33,13 @@ public class SettingActivity extends AppCompatActivity {
         manualBrightness.setEnabled(false);
 
         bluetoothConnection = BluetoothConnection.getInstance(this);
+        drivingInformation = DrivingInformation.getInstance(this, bluetoothConnection);
 
         autoBright.setChecked(true);
         autoBright.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 manualBrightness.setEnabled(false);
-                //TODO send microController the information that it change the brightness by itself
+                drivingInformation.turnOnLightsAutomatically();
             } else {
                 manualBrightness.setEnabled(true);
             }
@@ -47,17 +48,18 @@ public class SettingActivity extends AppCompatActivity {
         manualBrightness.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressChanged = 0;
 
+            @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChanged = progress;
             }
 
+            @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                //TODO Auto-generated method stub
             }
 
+            @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                Toast.makeText(SettingActivity.this, "Brightness: " + progressChanged + "%", Toast.LENGTH_LONG).show();
-                //TODO Send brightness data to mC
+                drivingInformation.setBrightnessLights(progressChanged);
             }
         });
 

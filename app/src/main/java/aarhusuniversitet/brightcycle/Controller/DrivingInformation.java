@@ -52,7 +52,7 @@ public class DrivingInformation {
 
     public void turnOffLights() {
         for (Light light : lights) {
-            
+
             if (light instanceof BackLight) {
                 light.turnOff();
                 if (((BackLight) light).automaticLight) {
@@ -94,14 +94,14 @@ public class DrivingInformation {
             ((Blinker) rightBlinker).blink(direction);
         } else ((Blinker) leftBlinker).blink(direction);
 
-        bluetoothConnection.sendData(direction, 1);
+        bluetoothConnection.sendData(direction);
     }
 
     public void stopBlinking() {
         for (Light light : lights) {
             if (light instanceof Blinker && ((Blinker) light).blinking) {
                 ((Blinker) light).stopBlink();
-                bluetoothConnection.sendData(((Blinker) light).direction, 0);
+                bluetoothConnection.sendData(((Blinker) light).direction);
             }
         }
     }
