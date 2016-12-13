@@ -16,7 +16,6 @@ public class DrivingInformation {
 
     public Light leftBlinker, rightBlinker;
     public Light backLight;
-    public Sensor lightSensor;
     public Sensor accelerometer;
     public GeoLocation currentLocation;
     public GeoLocation savedBikeLocation;
@@ -27,10 +26,12 @@ public class DrivingInformation {
     protected BluetoothConnection bluetoothConnection;
     private static DrivingInformation instance;
 
+    // List of device commands to send to the microcontroller.
     private final String LEFT_BLINKER = "l";
     private final String RIGHT_BLINKER = "r";
     private final String BACK_LIGHT_AUTOMATIC = "a";
     private final String BACK_LIGHT_MANUAL = "m";
+    private final String BACK_LIGHT_BRAKE = "s";
 
     public DrivingInformation(Activity activity, BluetoothConnection bluetoothConnection) {
         this.activity = activity;
@@ -38,6 +39,14 @@ public class DrivingInformation {
         initialize();
     }
 
+    /**
+     * Gets the only instance of the drivingInformation there is or when there is  creates a new one.
+     * Also called singleton pattern.
+     *
+     * @param activity the current activity
+     * @param bluetoothConnection the bluetooth connection to the microcontroller
+     * @return the only drivingInformation instance
+     */
     public static DrivingInformation getInstance(Activity activity, BluetoothConnection bluetoothConnection) {
         if (instance == null) {
             instance = new DrivingInformation(activity, bluetoothConnection);
@@ -45,17 +54,24 @@ public class DrivingInformation {
         return instance;
     }
 
+    /**
+     * Saves the location of your bike to the database. Will occur when the phone disconnects from the microcontroller.
+     */
     public void saveLocationBike() {
         savedBikeLocation = currentLocation;
         savedBikeLocation.save();
     }
 
+    /**
+     * Will turn off all the light(s) except the blinkers.
+     */
     public void turnOffLights() {
         for (Light light : lights) {
 
             if (light instanceof BackLight) {
                 light.turnOff();
-                if (((BackLight) light).automaticLight) {
+
+                if (((BackLight) light).automaticLight) { // When the brightness of the light is handled by the light sensor
                     ((BackLight) light).automaticLight = false;
                     bluetoothConnection.sendData(BACK_LIGHT_AUTOMATIC);
                 } else {
@@ -65,12 +81,13 @@ public class DrivingInformation {
         }
     }
 
+    /**
+     * Turns on the lights based on the surrounding light captured by the light sensor.
+     */
     public void turnOnLightsAutomatically() {
-        for (Light light :
-                lights) {
+        for (Light light : lights) {
             if (light instanceof BackLight) {
                 light.turnOn();
-
                 ((BackLight) light).automaticLight = true;
                 bluetoothConnection.sendData(BACK_LIGHT_AUTOMATIC);
 
@@ -78,10 +95,14 @@ public class DrivingInformation {
         }
     }
 
+    /**
+     * Sets the brightness of the light(s).
+     *
+     * @param brightness brightness to be set
+     */
     public void setBrightnessLights(int brightness) {
         for (Light light : lights) {
             if (light instanceof BackLight) {
-
                 light.setBrightness(brightness);
             }
         }
@@ -89,6 +110,11 @@ public class DrivingInformation {
         bluetoothConnection.sendData(BACK_LIGHT_MANUAL, brightness);
     }
 
+    /**
+     * Start blinking in the given direction.
+     *
+     * @param direction which blinker to start blinking
+     */
     public void startBlinking(String direction) {
         if (direction.equals(RIGHT_BLINKER)) {
             ((Blinker) rightBlinker).blink(direction);
@@ -97,6 +123,9 @@ public class DrivingInformation {
         bluetoothConnection.sendData(direction);
     }
 
+    /**
+     * Stops the blinking blinker.
+     */
     public void stopBlinking() {
         for (Light light : lights) {
             if (light instanceof Blinker && ((Blinker) light).blinking) {
@@ -106,12 +135,30 @@ public class DrivingInformation {
         }
     }
 
+    /**
+     * Turns on the brake light(s).
+     */
     public void turnOnBrakeLights() {
-        setBrightnessLights(100);
+        for (Light light : lights) {
+            if (light instanceof BackLight) {
+                ((BackLight) light).turnOnBrakeLight();
+            }
+        }
+
+        bluetoothConnection.sendData(BACK_LIGHT_BRAKE, 1);
     }
 
+    /**
+     * Turns off the brake light(s).
+     */
     public void turnOffBrakeLights() {
-        turnOffLights();
+        for (Light light : lights) {
+            if (light instanceof BackLight) {
+                ((BackLight) light).turnOffBrakeLight();
+            }
+        }
+
+        bluetoothConnection.sendData(BACK_LIGHT_BRAKE, 0);
     }
 
     private void initialize() {
@@ -131,9 +178,9 @@ public class DrivingInformation {
     }
 
     private void initializeLights() {
-        leftBlinker = new Blinker(accelerometer, lightSensor);
-        rightBlinker = new Blinker(accelerometer, lightSensor);
-        backLight = new BackLight(accelerometer, lightSensor);
+        leftBlinker = new Blinker(accelerometer);
+        rightBlinker = new Blinker(accelerometer);
+        backLight = new BackLight(accelerometer);
 
         lights = new ArrayList<>();
         lights.add(leftBlinker);

@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         checkPermissions();
 
         // TODO remove
-      Intent intent = new Intent(this, MapsActivity.class);
+        Intent intent = new Intent(this, MapsActivity.class);
         startActivity(intent);
 
         if (!bluetoothConnection.isBluetoothAvailable()) {
