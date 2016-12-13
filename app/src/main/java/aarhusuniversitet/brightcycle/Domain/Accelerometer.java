@@ -53,25 +53,13 @@ public class Accelerometer implements Sensor {
             mLastZ = z;
 
             //The user has to make a turn with an angle ca. 15° --> unit is m/s^2
-            /*if ((deltaX > 2.5) || (deltaX < -2.5)){
-                //drivingInformation.stopBlinking("b");
-                Timber.d("blinker off");
-            }*/
-            if (deltaX > 2.5) { //right turn
-                while (deltaX > -2.5) {
-                }
-                //drivingInformation.stopBlinking("b");
-                Timber.d("blinker off");
-            }
-            if (deltaX < -2.5) { //left turn
-                while (deltaX < 2.5) {
-                }
+            if ((deltaX > 2.5) || (deltaX < -2.5)){
                 //drivingInformation.stopBlinking("b");
                 Timber.d("blinker off");
             }
 
             //Assumption: the user is breaking with a deceleration around 3m/s^2 --> thesis
-            if(deltaY < -2.3){ //phone mounted in an angle of ~40°
+            if (deltaY > 2.3){ //phone mounted in an angle of ~40°
                 Timber.d("stoplight on");
             }
         }
