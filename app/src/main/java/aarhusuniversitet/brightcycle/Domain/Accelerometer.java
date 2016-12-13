@@ -14,6 +14,7 @@ public class Accelerometer implements Sensor {
     private float mLastZ;
     private final float NOISE = (float) 2.0; //m/s^2
     private DrivingInformation drivingInformation;
+    private boolean braking = false;
 
     public Accelerometer(DrivingInformation drivingInformation) {
         this.drivingInformation = drivingInformation;
@@ -24,17 +25,23 @@ public class Accelerometer implements Sensor {
         return 0;
     }
 
-    public void isOutOfTurn() {
+    private void isOutOfTurn() {
         drivingInformation.stopBlinking();
     }
 
-    public void isBraking() {
-        drivingInformation.turnOnBrakeLights();
+    private void isBraking() {
 
-        Handler handler = new Handler();
-        handler.postDelayed(() -> {
-            drivingInformation.turnOffBrakeLights();
-        }, 3000);
+        if(!braking){
+            braking = true;
+
+            drivingInformation.turnOnBrakeLights();
+            Handler handler = new Handler();
+            handler.postDelayed(() -> {
+                stoppedBraking();
+                braking = false;
+            }, 3000);
+        }
+
     }
 
     public void stoppedBraking() {

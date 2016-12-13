@@ -122,7 +122,7 @@ public class BluetoothConnection {
      * Sends data to the microcontroller via Bluetooth
      *
      * @param device Device name
-     * @param value The value to send
+     * @param value  The value to send
      */
     public void sendData(String device, int value) {
         if (bluetoothDevice != null) {
@@ -140,6 +140,13 @@ public class BluetoothConnection {
         if (bluetoothDevice != null) {
             bluetoothSPP.send(device, true);
             Timber.d("Bluetooth data send: " + device);
+        }
+    }
+
+    public void sendData(int value) {
+        if (bluetoothDevice != null) {
+            bluetoothSPP.send(Integer.toString(value), true);
+            Timber.d("Bluetooth data send: " + Integer.toString(value));
         }
     }
 }

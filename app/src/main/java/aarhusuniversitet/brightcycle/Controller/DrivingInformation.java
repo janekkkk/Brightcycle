@@ -110,7 +110,7 @@ public class DrivingInformation {
             }
         }
 
-        bluetoothConnection.sendData(BACK_LIGHT_MANUAL, brightness);
+        bluetoothConnection.sendData(brightness);
     }
 
     /**
@@ -193,4 +193,7 @@ public class DrivingInformation {
         lights.add(backLight);
     }
 
+    public void turnOnLightsManually() {
+        bluetoothConnection.sendData(BACK_LIGHT_MANUAL);
+    }
 }

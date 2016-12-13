@@ -41,6 +41,7 @@ public class SettingActivity extends AppCompatActivity {
                 manualBrightness.setEnabled(false);
                 drivingInformation.turnOnLightsAutomatically();
             } else {
+                drivingInformation.turnOnLightsManually();
                 manualBrightness.setEnabled(true);
             }
         });
