@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -104,7 +102,7 @@ public class MapsActivity extends AppCompatActivity {
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         // Get the default sensor of specified type
         accelerometerSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mSensorManager.registerListener(((Accelerometer)drivingInformation.accelerometer).accelerometerSensorListener, accelerometerSensor,
+        mSensorManager.registerListener(((Accelerometer) drivingInformation.accelerometer).accelerometerSensorListener, accelerometerSensor,
                 SensorManager.SENSOR_DELAY_NORMAL);
     }
 
@@ -130,7 +128,7 @@ public class MapsActivity extends AppCompatActivity {
             mapsController.navigationNewInstructionListener.onNewInstructionEvent();
 
             if (accelerometerSensor != null) {
-                mSensorManager.registerListener(((Accelerometer)drivingInformation.accelerometer).accelerometerSensorListener, accelerometerSensor,
+                mSensorManager.registerListener(((Accelerometer) drivingInformation.accelerometer).accelerometerSensorListener, accelerometerSensor,
                         SensorManager.SENSOR_DELAY_NORMAL);
             }
         }
@@ -144,7 +142,7 @@ public class MapsActivity extends AppCompatActivity {
         mapsController.detachNavigationListeners();
 
         if (accelerometerSensor != null) {
-            mSensorManager.unregisterListener(((Accelerometer)drivingInformation.accelerometer).accelerometerSensorListener);
+            mSensorManager.unregisterListener(((Accelerometer) drivingInformation.accelerometer).accelerometerSensorListener);
         }
 
         super.onPause();
@@ -412,6 +410,5 @@ public class MapsActivity extends AppCompatActivity {
     @OnClick(R.id.fabButton)
     public void fabButtonClicked(View fabButton) {
         mapsController.startNavigation(fabButton);
-
     }
 }

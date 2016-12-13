@@ -29,9 +29,12 @@ public class DrivingInformation {
     // List of device commands to send to the microcontroller.
     private final String LEFT_BLINKER = "l";
     private final String RIGHT_BLINKER = "r";
+    private final String STOP_BLINKERS = "b";
     private final String BACK_LIGHT_AUTOMATIC = "a";
     private final String BACK_LIGHT_MANUAL = "m";
-    private final String BACK_LIGHT_BRAKE = "s";
+    private final String BACK_LIGHT_BRAKE_ON = "s";
+    private final String BACK_LIGHT_BRAKE_OFF = "o";
+
 
     public DrivingInformation(Activity activity, BluetoothConnection bluetoothConnection) {
         this.activity = activity;
@@ -43,7 +46,7 @@ public class DrivingInformation {
      * Gets the only instance of the drivingInformation there is or when there is  creates a new one.
      * Also called singleton pattern.
      *
-     * @param activity the current activity
+     * @param activity            the current activity
      * @param bluetoothConnection the bluetooth connection to the microcontroller
      * @return the only drivingInformation instance
      */
@@ -128,11 +131,13 @@ public class DrivingInformation {
      */
     public void stopBlinking() {
         for (Light light : lights) {
-            if (light instanceof Blinker && ((Blinker) light).blinking) {
+
+            if (light instanceof Blinker) {
                 ((Blinker) light).stopBlink();
-                bluetoothConnection.sendData(((Blinker) light).direction);
             }
         }
+
+        bluetoothConnection.sendData(STOP_BLINKERS);
     }
 
     /**
@@ -145,7 +150,7 @@ public class DrivingInformation {
             }
         }
 
-        bluetoothConnection.sendData(BACK_LIGHT_BRAKE, 1);
+        bluetoothConnection.sendData(BACK_LIGHT_BRAKE_ON);
     }
 
     /**
@@ -158,7 +163,7 @@ public class DrivingInformation {
             }
         }
 
-        bluetoothConnection.sendData(BACK_LIGHT_BRAKE, 0);
+        bluetoothConnection.sendData(BACK_LIGHT_BRAKE_OFF);
     }
 
     private void initialize() {

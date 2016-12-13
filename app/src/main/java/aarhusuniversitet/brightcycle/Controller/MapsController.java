@@ -29,6 +29,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import aarhusuniversitet.brightcycle.BluetoothConnection;
+import aarhusuniversitet.brightcycle.Domain.GeoLocation;
 import aarhusuniversitet.brightcycle.MapsActivity;
 import aarhusuniversitet.brightcycle.R;
 import timber.log.Timber;
@@ -167,10 +168,18 @@ public class MapsController {
     }
 
     public void showBikeLocation() {
+        drivingInformation.savedBikeLocation = GeoLocation.getLastLocation();
+
         if (drivingInformation.savedBikeLocation != null) {
             Image image = new Image();
             image.setBitmap(BitmapFactory.decodeResource(mapsActivity.getResources(), R.drawable.ic_directions_bike));
             map.addMapObject(new MapMarker(drivingInformation.savedBikeLocation.getCoordinate(), image));
+            centerOnBikeLocation();
+        }
+    }
+
+    public void centerOnBikeLocation() {
+        if (drivingInformation.savedBikeLocation != null) {
             map.setCenter(drivingInformation.savedBikeLocation.getCoordinate(), Map.Animation.BOW);
             map.setZoomLevel((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
         } else {

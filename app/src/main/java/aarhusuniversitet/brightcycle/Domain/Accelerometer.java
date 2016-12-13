@@ -2,6 +2,7 @@ package aarhusuniversitet.brightcycle.Domain;
 
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.os.Handler;
 
 import aarhusuniversitet.brightcycle.Controller.DrivingInformation;
 import timber.log.Timber;
@@ -14,7 +15,7 @@ public class Accelerometer implements Sensor {
     private final float NOISE = (float) 2.0; //m/s^2
     private DrivingInformation drivingInformation;
 
-    public Accelerometer(DrivingInformation drivingInformation){
+    public Accelerometer(DrivingInformation drivingInformation) {
         this.drivingInformation = drivingInformation;
     }
 
@@ -23,15 +24,20 @@ public class Accelerometer implements Sensor {
         return 0;
     }
 
-    public void isOutOfTurn(){
+    public void isOutOfTurn() {
         drivingInformation.stopBlinking();
     }
 
-    public void isBraking(){
+    public void isBraking() {
         drivingInformation.turnOnBrakeLights();
+
+        Handler handler = new Handler();
+        handler.postDelayed(() -> {
+            drivingInformation.turnOffBrakeLights();
+        }, 3000);
     }
 
-    public void stoppedBraking(){
+    public void stoppedBraking() {
         drivingInformation.turnOffBrakeLights();
     }
 
@@ -53,14 +59,15 @@ public class Accelerometer implements Sensor {
             mLastZ = z;
 
             //The user has to make a turn with an angle ca. 15° --> unit is m/s^2
-            if ((deltaX > 2.5) || (deltaX < -2.5)){
-                //drivingInformation.stopBlinking("b");
+            if ((deltaX > 2.5) || (deltaX < -2.5)) {
                 Timber.d("blinker off");
+                isOutOfTurn();
             }
 
             //Assumption: the user is breaking with a deceleration around 3m/s^2 --> thesis
-            if (deltaY > 2.3){ //phone mounted in an angle of ~40°
+            if (deltaY > 2.3) { //phone mounted in an angle of ~40°
                 Timber.d("stoplight on");
+                isBraking();
             }
         }
 
