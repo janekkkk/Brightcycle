@@ -24,7 +24,6 @@ public class DrivingInformation {
     protected Activity activity;
     public ArrayList<Light> lights;
     protected BluetoothConnection bluetoothConnection;
-    private static DrivingInformation instance;
 
     // List of device commands to send to the microcontroller.
     private final String LEFT_BLINKER = "l";
@@ -35,15 +34,16 @@ public class DrivingInformation {
     private final String BACK_LIGHT_BRAKE_ON = "s";
     private final String BACK_LIGHT_BRAKE_OFF = "o";
 
+    private static DrivingInformation instance;
 
-    public DrivingInformation(Activity activity, BluetoothConnection bluetoothConnection) {
+    private DrivingInformation(Activity activity, BluetoothConnection bluetoothConnection) {
         this.activity = activity;
         this.bluetoothConnection = bluetoothConnection;
         initialize();
     }
 
     /**
-     * Gets the only instance of the drivingInformation there is or when there is  creates a new one.
+     * Gets the only instance of the drivingInformation there is or when there is creates a new one.
      * Also called singleton pattern.
      *
      * @param activity            the current activity
@@ -120,6 +120,7 @@ public class DrivingInformation {
      */
     public void startBlinking(String direction) {
         if (direction.equals(RIGHT_BLINKER)) {
+            if()
             ((Blinker) rightBlinker).blink(direction);
         } else ((Blinker) leftBlinker).blink(direction);
 

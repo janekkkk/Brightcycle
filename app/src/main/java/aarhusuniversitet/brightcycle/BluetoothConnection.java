@@ -14,10 +14,11 @@ public class BluetoothConnection {
 
     public static final int REQUEST_ENABLE_BT = 1;
     private BluetoothSPP bluetoothSPP;
-    private static BluetoothConnection instance = null;
     private DrivingInformation drivingInformation;
     private Activity activity;
     public BlueteethDevice bluetoothDevice;
+
+    private static BluetoothConnection instance = null;
 
     public static BluetoothConnection getInstance(Activity activity) {
         if (instance == null) {
@@ -26,7 +27,7 @@ public class BluetoothConnection {
         return instance;
     }
 
-    public BluetoothConnection(Activity activity) {
+    private BluetoothConnection(Activity activity) {
         this.activity = activity;
         bluetoothSPP = new BluetoothSPP(activity);
         drivingInformation = DrivingInformation.getInstance(activity, this);

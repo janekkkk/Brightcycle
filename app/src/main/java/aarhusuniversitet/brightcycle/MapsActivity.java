@@ -231,9 +231,13 @@ public class MapsActivity extends AppCompatActivity {
                 getSearchSuggestions(input);
                 String suggestion = searchView.getSuggestionAtPosition(0);
                 searchView.setQuery(suggestion, false);
-                getCoordinates(suggestion);
-                searchView.closeSearch();
-                Timber.d("Submitted " + suggestion);
+
+                if(suggestion.length() > 0){
+                    getCoordinates(suggestion);
+                    searchView.closeSearch();
+                    Timber.d("Submitted " + suggestion);
+                }
+
                 return false;
             }
 
@@ -398,6 +402,7 @@ public class MapsActivity extends AppCompatActivity {
     @OnClick(R.id.btnBlinkerLeft)
     public void buttonBlinkerLeftClicked(View button) {
         Timber.d("Left button pressed");
+
         drivingInformation.startBlinking("l");
     }
 
