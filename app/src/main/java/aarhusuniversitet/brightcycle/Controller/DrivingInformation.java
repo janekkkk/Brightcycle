@@ -11,6 +11,7 @@ import aarhusuniversitet.brightcycle.Domain.Blinker;
 import aarhusuniversitet.brightcycle.Domain.GeoLocation;
 import aarhusuniversitet.brightcycle.Domain.Light;
 import aarhusuniversitet.brightcycle.Domain.Sensor;
+import timber.log.Timber;
 
 public class DrivingInformation {
 
@@ -120,11 +121,27 @@ public class DrivingInformation {
      */
     public void startBlinking(String direction) {
         if (direction.equals(RIGHT_BLINKER)) {
-            if()
-            ((Blinker) rightBlinker).blink(direction);
-        } else ((Blinker) leftBlinker).blink(direction);
+            if (((Blinker) rightBlinker).blinking) {
+                stopBlinking();
+                Timber.d("Stop Blinking");
+            } else {
+                ((Blinker) rightBlinker).blink(direction);
+                bluetoothConnection.sendData(direction);
+                Timber.d("Right Blinking");
+            }
+        } else {
+            if (((Blinker) leftBlinker).blinking) {
+                stopBlinking();
+                Timber.d("Stop Blinking");
 
-        bluetoothConnection.sendData(direction);
+            } else {
+                ((Blinker) leftBlinker).blink(direction);
+                bluetoothConnection.sendData(direction);
+                Timber.d("Left Blinking");
+
+            }
+        }
+
     }
 
     /**
